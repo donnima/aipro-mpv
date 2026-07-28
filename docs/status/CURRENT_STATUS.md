@@ -1,27 +1,44 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (Claude review of TASK-002 Part A, including independent re-verification of `ba2b5f3`)
-**Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public) · **HEAD:** `ba2b5f3`
+**Last updated:** 2026-07-28 (Agent Lock Protocol established)
+**Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
+
+---
+
+## Agent lock
+
+| Field                           | Value                                                                                                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `none`                                                                                                                                                                                                                                 |
+| **Write Lock Owner**            | `none`                                                                                                                                                                                                                                 |
+| **Active Task**                 | `none`                                                                                                                                                                                                                                 |
+| **Authoritative Commit**        | `0e23ead` (baseline before Agent Lock Protocol commit; protocol commit becomes baseline once landed)                                                                                                                                   |
+| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                                                       |
+| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                                                      |
+| **Next Action**                 | Founder: place Neon `DATABASE_URL` + `DATABASE_URL_UNPOOLED` in a gitignored `.env.local`, then grant **Write Lock Owner** to Cursor for **TASK-002 Part B** only via a committed status update. Until then, no Part B implementation. |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                                                            |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                                                              |
+| **Cursor Action Permitted**     | `no` — Part B not issued; credentials still required                                                                                                                                                                                   |
 
 ---
 
 ## Status block
 
-| Field               | Value                                                                                                                                                                       |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Current Task**    | TASK-002 Part B                                                                                                                                                             |
-| **Previous Task**   | TASK-002 Part A                                                                                                                                                             |
-| **Previous Status** | **APPROVED WITH FOLLOW-UP** (`docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md`) — follow-ups A-1–A-4 subsequently closed on `ba2b5f3` and independently re-verified by Claude |
-| **Current Status**  | **BLOCKED**                                                                                                                                                                 |
-| **Blocking Reason** | Founder architecture decisions and `DATABASE_URL` are required before database implementation.                                                                              |
+| Field               | Value                                                                                                                                                          |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Current Task**    | TASK-002 Part B                                                                                                                                                |
+| **Previous Task**   | TASK-002 Part A                                                                                                                                                |
+| **Previous Status** | **APPROVED WITH FOLLOW-UP** (`docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md`) — follow-ups A-1–A-4 closed on `ba2b5f3` and independently re-verified by Claude |
+| **Current Status**  | **BLOCKED**                                                                                                                                                    |
+| **Blocking Reason** | Founder architecture decisions and `DATABASE_URL` are required before database implementation. Agent Lock Protocol is now in force.                            |
 
-**No Part B task is issued.** Per `docs/tasks/TASK-002.md`, the next implementation task will not be created until the founder answers the open architecture questions below.
+**No Part B task is issued.** Per `docs/tasks/TASK-002.md`, the next implementation task will not be created until the founder answers the open architecture questions below **and** status grants Cursor the write lock.
 
 ---
 
 ## Where the project stands
 
-Phase 0 tooling baseline: accepted. TASK-002 Part A (repository purity boundary, CI permissions, Dependabot constraints): accepted, and all follow-up findings are now closed and verified. No database, authentication, tenancy, or product surface exists yet.
+Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed and verified. Agent Lock Protocol added to prevent agents from acting on undelivered drafts. No database, authentication, tenancy, or product surface exists yet.
 
 ---
 
@@ -75,16 +92,17 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 
 ---
 
-## Quality gates — last independently verified 2026-07-28 by Claude against `ba2b5f3`
+## Quality gates — last verified 2026-07-28 (Agent Lock Protocol, Cursor)
 
-| Gate                 | Result                                            |
-| -------------------- | ------------------------------------------------- |
-| `pnpm format:check`  | pass                                              |
-| `pnpm lint`          | pass                                              |
-| `pnpm typecheck`     | pass                                              |
-| `pnpm test`          | pass — **14 tests**, 3 files                      |
-| `pnpm build`         | pass — Next.js 15.5.22                            |
-| CI run for `a5655a7` | success — run `30341374040`, confirmed via GitHub |
+| Gate                       | Result                                   |
+| -------------------------- | ---------------------------------------- |
+| `pnpm validate:agent-lock` | pass                                     |
+| `pnpm format:check`        | pass                                     |
+| `pnpm lint`                | pass                                     |
+| `pnpm typecheck`           | pass                                     |
+| `pnpm test`                | pass — **25** tests, 4 files             |
+| `pnpm build`               | pass — Next.js 15.5.22                   |
+| CI run for `a5655a7`       | success — run `30341374040` (historical) |
 
 ---
 
@@ -94,11 +112,12 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 | ------------------------------------- | ------------------------------------------------------ | --------------------------------------------------- |
 | Phase 0                               | Baseline builds, lints, typechecks, tests, CI runs     | **PASSED**                                          |
 | TASK-002 Part A                       | F-1…F-5 and A-1…A-4 closed and verified                | **PASSED**                                          |
+| Agent Lock Protocol                   | Write-lock fields + validator                          | **IN THIS COMMIT**                                  |
 | TASK-002 Part B                       | Schema + RLS proven                                    | **BLOCKED** on `DATABASE_URL` and founder decisions |
 | **Phase 1 isolation gate (TASK-005)** | **Tenant isolation proven by the adversarial harness** | Not started — **no product data until this passes** |
 
 ---
 
-## Process note
+## Process note (resolved)
 
-Two agents are editing this repository concurrently without a lock. During this review, Cursor read Claude's in-progress, uncommitted review draft directly off disk, implemented fixes for the findings in it, and committed the draft review file itself under an unrelated commit message (`ba2b5f3`) before Claude delivered or committed it. The fixes were independently verified correct — see `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md`, Post-Review Note — but the sequencing bypassed the propose → approve → implement loop for those specific findings. `AGENTS.md` / `CLAUDE.md` establish a legitimate lighter cadence for _approved_ tasks between milestones; consuming an undelivered review draft is a different case worth the founder's attention as a pattern.
+The concurrent-edit sequencing issue (Cursor consuming an undelivered Claude review draft) is addressed by the Agent Lock Protocol in `docs/process/AGENT-WORKFLOW.md`, `AGENTS.md`, and `CLAUDE.md`. Drafts live under `docs/drafts/` or `*.draft.md`. `pnpm validate:agent-lock` enforces the status lock block.

@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "node",
-    include: ["packages/*/src/**/*.test.ts", "apps/web/**/*.test.ts"],
+    include: ["packages/*/src/**/*.test.ts", "apps/web/**/*.test.ts", "scripts/**/*.test.ts"],
     exclude: ["**/node_modules/**", "**/.next/**", "**/e2e/**", "**/dist/**"],
   },
   resolve: {

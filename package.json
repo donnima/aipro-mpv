@@ -17,7 +17,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "pnpm --filter @aipro/web test:e2e"
+    "test:e2e": "pnpm --filter @aipro/web test:e2e",
+    "validate:agent-lock": "node scripts/validate-agent-lock.mjs"
   },
   "devDependencies": {
     "@types/node": "~22.20.1",

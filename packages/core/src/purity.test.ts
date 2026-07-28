@@ -65,6 +65,18 @@ describe("@aipro/core purity boundary", () => {
     expect(errorMessages(result).length).toBeGreaterThan(0);
   });
 
+  it("rejects a workspace I/O package import (@aipro/db)", async () => {
+    const result = await lintSnippet(`import { db } from "@aipro/db";\nexport const x = db;\n`);
+    expect(errorMessages(result).length).toBeGreaterThan(0);
+  });
+
+  it("rejects dynamic import of @aipro/db", async () => {
+    const result = await lintSnippet(
+      `export async function load(): Promise<unknown> {\n  return await import("@aipro/db");\n}\n`,
+    );
+    expect(errorMessages(result).length).toBeGreaterThan(0);
+  });
+
   it("allows a relative pure import", async () => {
     const result = await lintSnippet(
       `import { getCoreIdentity } from "./index";\nexport const id = getCoreIdentity();\n`,
@@ -72,8 +84,22 @@ describe("@aipro/core purity boundary", () => {
     expect(errorMessages(result)).toEqual([]);
   });
 
+  it("allows relative dynamic imports whose paths contain builtin substrings", async () => {
+    // A-1 regression: unanchored selectors falsely flagged "./costs" and "./path-utils".
+    const result = await lintSnippet(
+      `export async function loadCosts(): Promise<unknown> {\n  return await import("./costs");\n}\nexport async function loadPath(): Promise<unknown> {\n  return await import("./path-utils");\n}\n`,
+    );
+    expect(errorMessages(result)).toEqual([]);
+  });
+
+  it("allows @aipro/types (workspace allow-list)", async () => {
+    const result = await lintSnippet(
+      `import type { HealthResponse } from "@aipro/types";\nexport type H = HealthResponse;\n`,
+    );
+    expect(errorMessages(result)).toEqual([]);
+  });
+
   it("allows an import from vitest in test fixtures", async () => {
-    // vitest is not in the banned set; this guards against over-blocking.
     const result = await lintSnippet(
       `import { describe } from "vitest";\nexport const d = describe;\n`,
     );

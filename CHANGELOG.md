@@ -4,6 +4,14 @@ All notable changes to this project are documented here. Completed phases also u
 
 ## [Unreleased]
 
+### TASK-002 Part A follow-ups (A-1 / A-2)
+
+- Anchored dynamic `import()` / `require()` selectors (no false positives on `./costs`, `./path-utils`).
+- Ban workspace I/O packages (`@aipro/db`, `@aipro/web`, `@aipro/ui`, `@aipro/config`); allow `@aipro/types`.
+- Purity rule scoped to `packages/core/src/**` so `eslint.config.js` can load the shared config.
+- Dependabot major ignores for `tailwind-merge` and `prettier-plugin-tailwindcss`.
+- Added `AGENTS.md` / `CLAUDE.md` for milestone-lead Cursor + end-of-milestone Claude audits.
+
 ### TASK-002 Part A — Repository boundary and CI hardening
 
 - `packages/core` purity rule now blocks dynamic `import()` and `require()` of banned modules (`no-restricted-syntax`).

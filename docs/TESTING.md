@@ -12,15 +12,19 @@ CI runs the same chain, plus `gitleaks` and Playwright E2E (Chromium installed i
 
 ## `packages/core` purity boundary
 
-ADR-0001 requires `packages/core` to stay free of Next.js, React, Prisma, and Node I/O so decision logic stays extractable.
+ADR-0001 requires `packages/core` to stay free of Next.js, React, Prisma, Node I/O, and workspace I/O packages so decision logic stays extractable.
 
 Enforcement lives in `@aipro/config/eslint/core`:
 
 - `no-restricted-imports` — static `import` / `export … from`
-- `no-restricted-syntax` — dynamic `import()` and `require()`
-- Node builtins are enumerated from `module.builtinModules` at config load time (bare and `node:` forms), not a hand-written subset
+- `no-restricted-syntax` — dynamic `import()` and `require()` with **anchored** module-id regexes
+- Node builtins enumerated from `module.builtinModules` (bare and `node:` forms)
+- Workspace I/O ban: `@aipro/db`, `@aipro/web`, `@aipro/ui`, `@aipro/config` (and subpaths)
+- Workspace allow-list: `@aipro/types` plus relative imports only
 
-Self-test: `packages/core/src/purity.test.ts` lints fixture snippets through the ESLint Node API and asserts each banned form errors. A permitted relative import must still pass.
+Self-test: `packages/core/src/purity.test.ts` lints fixture snippets through the ESLint Node API. It covers banned forms and allowed cases including relative dynamic imports whose paths contain builtin substrings (e.g. `./costs`, `./path-utils`).
+
+When adding a new workspace package, ban it in `packages/config/eslint/core.js` unless it is a pure contracts package like `@aipro/types`.
 
 ### Limits of a lint-based boundary
 

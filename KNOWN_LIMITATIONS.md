@@ -2,6 +2,13 @@
 
 Living list of intentional gaps and environment constraints. Updated per task.
 
+## TASK-002 Part A follow-ups
+
+| Limitation                              | Impact                                             | Resolution path                       |
+| --------------------------------------- | -------------------------------------------------- | ------------------------------------- |
+| Part B blocked — no Neon `DATABASE_URL` | Cannot create Prisma schema, migrate, or prove RLS | Founder supplies pooled + direct URLs |
+| Dependabot PRs #1–#12 still open (A-5)  | Stale major PRs                                    | Founder closes without merging        |
+
 ## TASK-002 Part A
 
 | Limitation                                                                                | Impact                                                                   | Resolution path                                                               |

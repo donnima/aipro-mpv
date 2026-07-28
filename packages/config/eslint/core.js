@@ -4,17 +4,25 @@
  *
  * Coverage:
  * - static import / export-from via no-restricted-imports
- * - dynamic import() and require() via no-restricted-syntax
+ * - dynamic import() and require() via no-restricted-syntax (anchored regexes)
  * - every Node builtin from module.builtinModules (bare + node: prefix)
+ * - workspace I/O packages banned; only @aipro/types is an allowed workspace import
  */
 import { builtinModules } from "node:module";
 import base from "./base.js";
 
 const PURITY_MESSAGE =
-  "@aipro/core must remain pure: no Next.js, React, Prisma, or Node built-in I/O (ADR-0001).";
+  "@aipro/core must remain pure: no Next.js, React, Prisma, Node I/O, or workspace I/O packages (ADR-0001).";
 
 /** Framework / ORM modules that must never enter packages/core. */
 const bannedFrameworkModules = ["next", "react", "react-dom", "@prisma/client", "prisma"];
+
+/**
+ * Workspace packages that perform I/O or bind frameworks.
+ * Allow-list counterpart: only `@aipro/types` (plus relative imports) is permitted.
+ * When adding a new workspace package, ban it here unless it is pure types/contracts.
+ */
+const bannedWorkspacePackages = ["@aipro/db", "@aipro/web", "@aipro/ui", "@aipro/config"];
 
 /**
  * Full Node builtin set from the running Node version.
@@ -34,20 +42,19 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
 }
 
-/** Matches banned module ids including subpaths (next/server, fs/promises, …). */
+/** Matches banned module ids including subpaths (next/server, fs/promises, @aipro/db/…). */
 const bannedModuleRegexSource = [
   ...bannedFrameworkModules.map((name) => `${escapeRegex(name)}(?:\\/.*)?`),
+  ...bannedWorkspacePackages.map((name) => `${escapeRegex(name)}(?:\\/.*)?`),
   ...bareBuiltins.map((name) => `${escapeRegex(name)}`),
   ...bareBuiltins.map((name) => `node:${escapeRegex(name)}`),
 ].join("|");
+
 const bannedModuleRegex = new RegExp(`^(?:${bannedModuleRegexSource})$`);
 
 const restrictedImportPaths = [
-  ...bannedFrameworkModules.flatMap((name) => [
-    { name, message: PURITY_MESSAGE },
-    // Subpath imports like next/server are covered by patterns below;
-    // path entries still catch the exact package root.
-  ]),
+  ...bannedFrameworkModules.map((name) => ({ name, message: PURITY_MESSAGE })),
+  ...bannedWorkspacePackages.map((name) => ({ name, message: PURITY_MESSAGE })),
   ...bareBuiltins.flatMap((name) => [
     { name, message: PURITY_MESSAGE },
     { name: `node:${name}`, message: PURITY_MESSAGE },
@@ -55,18 +62,17 @@ const restrictedImportPaths = [
 ];
 
 /**
- * ESLint selectors cannot interpolate RegExp objects — embed the source string.
- * ImportExpression[source.value=/…/] covers await import("…").
- * CallExpression require("…") covers CommonJS require of banned modules.
+ * Anchored esquery regexes — without ^…$ a specifier that merely *contains*
+ * a builtin name (e.g. "./costs", "./path-utils") falsely matches (A-1).
  */
-const dynamicImportSelector = `ImportExpression[source.type='Literal'][source.value=/${bannedModuleRegexSource}/]`;
-const requireSelector = `CallExpression[callee.name='require'][arguments.0.type='Literal'][arguments.0.value=/${bannedModuleRegexSource}/]`;
+const dynamicImportSelector = `ImportExpression[source.type='Literal'][source.value=/^(?:${bannedModuleRegexSource})$/]`;
+const requireSelector = `CallExpression[callee.name='require'][arguments.0.type='Literal'][arguments.0.value=/^(?:${bannedModuleRegexSource})$/]`;
 
 /** @type {import("eslint").Linter.Config[]} */
 const core = [
   ...base,
   {
-    files: ["**/*.{ts,tsx,js,jsx,mjs,cjs}"],
+    files: ["src/**/*.{ts,tsx,js,jsx,mjs,cjs}"],
     rules: {
       "@typescript-eslint/no-require-imports": "error",
       "no-restricted-imports": [
@@ -75,7 +81,17 @@ const core = [
           paths: restrictedImportPaths,
           patterns: [
             {
-              group: ["next/*", "react/*", "react-dom/*", "@prisma/*", "node:*"],
+              group: [
+                "next/*",
+                "react/*",
+                "react-dom/*",
+                "@prisma/*",
+                "node:*",
+                "@aipro/db/*",
+                "@aipro/web/*",
+                "@aipro/ui/*",
+                "@aipro/config/*",
+              ],
               message: PURITY_MESSAGE,
             },
           ],
@@ -96,5 +112,5 @@ const core = [
   },
 ];
 
-export { bannedModuleRegex, bareBuiltins, PURITY_MESSAGE };
+export { bannedModuleRegex, bareBuiltins, bannedWorkspacePackages, PURITY_MESSAGE };
 export default core;

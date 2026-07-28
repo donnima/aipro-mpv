@@ -12,7 +12,7 @@
 | **Active Agent**                | `none`                                                                                                                   |
 | **Write Lock Owner**            | `none`                                                                                                                   |
 | **Active Task**                 | `none`                                                                                                                   |
-| **Authoritative Commit**        | `ca01d8b` (update to TASK-008 commit SHA after land)                                                                     |
+| **Authoritative Commit**        | `fe973e8`                                                                                                            |
 | **Allowed Paths**               | `none` — no agent holds the lock                                                                                         |
 | **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                        |
 | **Next Action**                 | Founder confirms WordPress single-site vs Multisite, supplies Neon credentials, then authorizes revised TASK-002 Part B. |

@@ -1,25 +1,25 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (TASK-006 complete — lock released)
+**Last updated:** 2026-07-28 (TASK-007 WordPress identity architecture — lock acquired)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                                                                                                                                                                                                    |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Active Agent**                | `none`                                                                                                                                                                                                                                                                                                   |
-| **Write Lock Owner**            | `none`                                                                                                                                                                                                                                                                                                   |
-| **Active Task**                 | `none`                                                                                                                                                                                                                                                                                                   |
-| **Authoritative Commit**        | `86d8d2a`                                                                                                                                                                                                                                                                                                |
-| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                                                                                                                         |
-| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                                                                                                                        |
-| **Next Action**                 | Founder review of Q3/Q4/Q6 in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` (task [`TASK-006`](../tasks/TASK-006-founder-decisions-extraction.md)). After answers (and Neon credentials), grant Cursor the write lock for TASK-002 Part B via a committed status update with **Founder Authorization**. |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                                                                                                                              |
-| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                                                                                                                                |
-| **Cursor Action Permitted**     | `no`                                                                                                                                                                                                                                                                                                     |
-| **Founder Authorization**       | `none` — idle                                                                                                                                                                                                                                                                                            |
+| Field                           | Value                                                                                                                                                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `Cursor`                                                                                                                                                                                              |
+| **Write Lock Owner**            | `Cursor`                                                                                                                                                                                              |
+| **Active Task**                 | `TASK-007`                                                                                                                                                                                            |
+| **Authoritative Commit**        | `48aa2c4`                                                                                                                                                                                             |
+| **Allowed Paths**               | `ARCHITECTURE.md`, `DATA_MODEL.md`, `DECISIONS.md`, `MVP_SCOPE.md`, `AGENTS.md`, `CLAUDE.md`, `KNOWN_LIMITATIONS.md`, `.env.example`, `docs/**`                                                        |
+| **Forbidden Paths**             | `apps/`, `packages/`, `prisma/`, database files, migrations, production application features                                                                                                          |
+| **Next Action**                 | Cursor documents founder-approved WordPress-owned identity and presentation architecture (docs/ADR only); no Prisma schema or Part B implementation.                                                 |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                           |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                             |
+| **Cursor Action Permitted**     | `yes` — documentation and architecture planning only; no Prisma, migrations, RLS, or production app features                                                                                          |
+| **Founder Authorization**       | Founder approved WordPress-Owned Identity and User Experience architecture and directed Cursor to record and implement it before TASK-002 Part B                                                      |
 
 ---
 

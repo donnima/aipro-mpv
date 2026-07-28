@@ -1,6 +1,6 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (TASK-007 WordPress architecture complete — lock released)
+**Last updated:** 2026-07-28 (TASK-007 complete — Authoritative Commit set to residual polish SHA)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
@@ -12,7 +12,7 @@
 | **Active Agent**                | `none`                                                                                                         |
 | **Write Lock Owner**            | `none`                                                                                                         |
 | **Active Task**                 | `none`                                                                                                         |
-| **Authoritative Commit**        | `ee28777` (will update to residual polish commit SHA after land)                                               |
+| **Authoritative Commit**        | `6bd263b`                                                                                                      |
 | **Allowed Paths**               | `none` — no agent holds the lock                                                                               |
 | **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                              |
 | **Next Action**                 | Founder supplies WordPress installation details and Neon credentials, then authorizes revised TASK-002 Part B. |

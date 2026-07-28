@@ -87,14 +87,14 @@ pnpm build
 
 ## Results
 
-| Command                    | Result                           |
-| -------------------------- | -------------------------------- |
-| `pnpm validate:agent-lock` | _(filled after remediation run)_ |
-| `pnpm format:check`        | _(filled after remediation run)_ |
-| `pnpm lint`                | _(filled after remediation run)_ |
-| `pnpm typecheck`           | _(filled after remediation run)_ |
-| `pnpm test`                | _(filled after remediation run)_ |
-| `pnpm build`               | _(filled after remediation run)_ |
+| Command                    | Result                               |
+| -------------------------- | ------------------------------------ |
+| `pnpm validate:agent-lock` | **0** — OK                           |
+| `pnpm format:check`        | **0**                                |
+| `pnpm lint`                | **0**                                |
+| `pnpm typecheck`           | **0**                                |
+| `pnpm test`                | **0** — 4 files, **25** tests passed |
+| `pnpm build`               | **0** — Next.js 15.5.22              |
 
 ---
 

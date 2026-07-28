@@ -12,7 +12,7 @@
 | **Active Agent**                | `none`                                                                                                                                                                                                                                                                                                   |
 | **Write Lock Owner**            | `none`                                                                                                                                                                                                                                                                                                   |
 | **Active Task**                 | `none`                                                                                                                                                                                                                                                                                                   |
-| **Authoritative Commit**        | `894828e` (TASK-006 remediation lock-acquire; remediation deliverable commit becomes baseline once landed)                                                                                                                                                                                               |
+| **Authoritative Commit**        | `86d8d2a`                                                                                                                                                                                                                                                                                                |
 | **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                                                                                                                         |
 | **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                                                                                                                        |
 | **Next Action**                 | Founder review of Q3/Q4/Q6 in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` (task [`TASK-006`](../tasks/TASK-006-founder-decisions-extraction.md)). After answers (and Neon credentials), grant Cursor the write lock for TASK-002 Part B via a committed status update with **Founder Authorization**. |
@@ -98,12 +98,12 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 
 | Gate                       | Result                                   |
 | -------------------------- | ---------------------------------------- |
-| `pnpm validate:agent-lock` | _(pending run)_                          |
-| `pnpm format:check`        | _(pending run)_                          |
-| `pnpm lint`                | _(pending run)_                          |
-| `pnpm typecheck`           | _(pending run)_                          |
-| `pnpm test`                | _(pending run)_                          |
-| `pnpm build`               | _(pending run)_                          |
+| `pnpm validate:agent-lock` | pass                                     |
+| `pnpm format:check`        | pass                                     |
+| `pnpm lint`                | pass                                     |
+| `pnpm typecheck`           | pass                                     |
+| `pnpm test`                | pass — **25** tests, 4 files             |
+| `pnpm build`               | pass — Next.js 15.5.22                   |
 | CI run for `a5655a7`       | success — run `30341374040` (historical) |
 
 ---

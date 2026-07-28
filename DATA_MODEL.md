@@ -32,7 +32,7 @@ Binding rules for every table.
 
 ## 2. Scope Reduction Applied
 
-The operating system §10 lists roughly 60 entities. That is a schema for a mature product; it contradicts §2's "narrowest coherent system." The MVP model is **47 domain tables plus 3 Auth.js tables**. Twelve entities are deferred or collapsed with a stated reason.
+The operating system §10 lists roughly 60 entities. That is a schema for a mature product; it contradicts §2's "narrowest coherent system." The MVP model is **47 domain tables** under WordPress-owned identity (**ADR-0021**). Auth.js credential tables are **not** used. Twelve entities are deferred or collapsed with a stated reason.
 
 | §10 entity             | Disposition                                  | Reason                                                                                                                                         |
 | ---------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -62,7 +62,7 @@ Two entities are **added** because the source model does not cover requirements 
 
 ```
 Role                  PLATFORM_ADMIN | ORG_ADMIN | ANALYST | CLIENT_VIEWER
-InvitationStatus      PENDING | ACCEPTED | EXPIRED | REVOKED
+InvitationStatus      PENDING | ACCEPTED | EXPIRED | REVOKED   _(deferred — not in Phase 1 schema)_
 ProjectStatus         DRAFT | DATA_COLLECTION | ANALYSIS | ANALYST_REVIEW | APPROVED | ARCHIVED
 SalesChannel          AMAZON_US | SHOPIFY_DTC
 SourceType            INDUSTRY_REPORT | MARKETPLACE_DATA | SUPPLIER_DOCUMENT | GOVERNMENT_PUBLICATION
@@ -88,40 +88,48 @@ LeadInterest          PAID_PILOT | EARLY_ACCESS | INFORMATION_ONLY
 
 ## 4. Phase 1 — Identity, Tenancy, Governance
 
-This is the complete schema for the Phase 1 gate. Eight domain tables plus three Auth.js tables. Nothing else is built until the isolation suite passes.
+This is the complete schema for the Phase 1 gate under **ADR-0021** (WordPress-owned identity). **Five** domain tables. No Auth.js / password / session tables. Nothing else is built until the isolation suite passes.
 
-### `users` — _not tenant-owned_
+### `users` — WordPress identity mapping (_not tenant-owned_)
 
-| Column                      | Type                           | Notes                                                       |
-| --------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `id`                        | uuid pk                        |                                                             |
-| `email`                     | citext unique not null         |                                                             |
-| `email_verified`            | timestamptz                    | Auth.js                                                     |
-| `name`                      | text                           |                                                             |
-| `image_url`                 | text                           |                                                             |
-| `is_platform_admin`         | boolean not null default false | Grants no data access on its own — see `support_grants`     |
-| `anonymized_at`             | timestamptz                    | GDPR erasure: PII cleared, row retained for audit integrity |
-| `created_at` / `updated_at` | timestamptz                    |                                                             |
+External identity mapping only. **Not** a credential account. WordPress remains the identity source of truth (ADR-0021).
 
-A user may belong to many organizations. `is_platform_admin` is deliberately **not** a data-access grant (ADR-0020).
+| Column                      | Type                           | Notes                                                           |
+| --------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| `id`                        | uuid pk                        | Internal AIPro user id                                          |
+| `wordpress_site_id`         | text not null                  | Site identifier (blog_id or configured site key; Multisite TBD) |
+| `wordpress_user_id`         | text not null                  | WordPress user ID as string                                     |
+| `email`                     | citext                         | Cached only when needed; WordPress is authoritative             |
+| `display_name`              | text                           | Cached only when needed                                         |
+| `account_status`            | text not null default `ACTIVE` | e.g. `ACTIVE`, `DISABLED`                                       |
+| `is_platform_admin`         | boolean not null default false | Grants no data access on its own — see `support_grants`         |
+| `last_authenticated_at`     | timestamptz                    | Last successful bridge authentication                           |
+| `anonymized_at`             | timestamptz                    | GDPR erasure: PII cleared, row retained for audit integrity     |
+| `created_at` / `updated_at` | timestamptz                    |                                                                 |
 
-### `accounts`, `sessions`, `verification_tokens`
+`unique (wordpress_site_id, wordpress_user_id)`.
 
-Auth.js standard tables via the Prisma adapter. Database sessions, not JWT (ADR-0005). Not tenant-owned.
+**Forbidden columns (must never exist):** password, password_hash, reset_token, session_token, WordPress cookie material.
+
+A user may belong to many organizations via `memberships`. `is_platform_admin` is deliberately **not** a data-access grant (ADR-0020).
+
+### ~~`accounts`, `sessions`, `verification_tokens`~~ — **removed**
+
+**Superseded by ADR-0021.** Auth.js adapter tables are **not** created in Phase 1 or later. Sessions and passwords live only in WordPress.
 
 ### `organizations` — _tenancy root_
 
-| Column                      | Type                             | Notes                                                     |
-| --------------------------- | -------------------------------- | --------------------------------------------------------- |
-| `id`                        | uuid pk                          |                                                           |
-| `name`                      | text not null                    |                                                           |
-| `slug`                      | citext unique not null           | Used in `/orgs/[orgSlug]/…`; the org context source (S-2) |
-| `country`                   | char(2)                          |                                                           |
-| `reporting_currency`        | char(3) not null default `'USD'` | Default for new projects                                  |
-| `ai_daily_token_budget`     | integer not null default 200000  | Enforced pre-dispatch (S-8)                               |
-| `archived_at`               | timestamptz                      |                                                           |
-| `created_by`                | uuid → users                     |                                                           |
-| `created_at` / `updated_at` | timestamptz                      |                                                           |
+| Column                      | Type                             | Notes                                                        |
+| --------------------------- | -------------------------------- | ------------------------------------------------------------ |
+| `id`                        | uuid pk                          |                                                              |
+| `name`                      | text not null                    |                                                              |
+| `slug`                      | citext unique not null           | Stable org key; used in API paths / WP routing context (S-2) |
+| `country`                   | char(2)                          |                                                              |
+| `reporting_currency`        | char(3) not null default `'USD'` | Default for new projects                                     |
+| `ai_daily_token_budget`     | integer not null default 200000  | Enforced pre-dispatch (S-8)                                  |
+| `archived_at`               | timestamptz                      |                                                              |
+| `created_by`                | uuid → users                     |                                                              |
+| `created_at` / `updated_at` | timestamptz                      |                                                              |
 
 ### `memberships` — _the authorization root_
 
@@ -135,26 +143,17 @@ Auth.js standard tables via the Prisma adapter. Database sessions, not JWT (ADR-
 
 `unique (organization_id, user_id)` · index on `(user_id)`.
 
-**This table is read on every authenticated tenant request.** Role is never trusted from the session token, so role changes and removals take effect immediately (S-14). A membership row is required for the request to proceed at all; absence yields 404, not 403 (ADR-0004).
+**This table is read on every authenticated tenant request.** Role is never trusted from a browser claim or JWT alone for authorization decisions — membership and role are re-read from Neon (S-14, ADR-0021). A membership row is required for the request to proceed at all; absence yields 404, not 403 (ADR-0004).
+
+Organization mapping is resolved through trusted WordPress user mapping and server-side membership lookup (or administrator-approved assignment). **The browser must not select an arbitrary organization ID.**
 
 **Invariant:** an organization must always retain at least one `ORG_ADMIN`. Removing or demoting the last admin is rejected (S-6).
 
-### `invitations`
+### `invitations` — **deferred (WordPress-owned onboarding preferred)**
 
-| Column                      | Type                                        | Notes                                                                     |
-| --------------------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
-| `id`                        | uuid pk                                     |                                                                           |
-| `organization_id`           | uuid not null → organizations               |                                                                           |
-| `email`                     | citext not null                             | Acceptance requires the authenticated email to match                      |
-| `role`                      | Role not null                               | Cannot be `PLATFORM_ADMIN`                                                |
-| `token_hash`                | text not null unique                        | SHA-256 of a 256-bit random token. **Plaintext is emailed, never stored** |
-| `status`                    | InvitationStatus not null default `PENDING` |                                                                           |
-| `expires_at`                | timestamptz not null                        | 7 days                                                                    |
-| `accepted_at`               | timestamptz                                 | Single use                                                                |
-| `invited_by`                | uuid not null → users                       |                                                                           |
-| `created_at` / `updated_at` | timestamptz                                 |                                                                           |
+Phase 1 **does not** require an AIPro `invitations` table. Inviting users to the brand site and assigning WordPress capabilities is owned by WordPress / the integration plugin. If a future ADR reintroduces product-side invitations, they must not store plaintext tokens and must not grant `PLATFORM_ADMIN` (historical S-5 / S-6 controls).
 
-Covers S-5 and S-6: hashed at rest, single use, expiring, email-bound, and unable to grant platform admin.
+~~Historical invitation columns (Auth.js-era plan) are omitted from the Phase 1 Prisma plan.~~
 
 ### `support_grants` — _not tenant-owned_ (ADR-0020)
 
@@ -354,19 +353,19 @@ Storing the policy version and a hash of the exact consent text shown means the 
 
 ## 11. Entity Count
 
-| Group                                          |                         Tables |
-| ---------------------------------------------- | -----------------------------: |
-| Identity, tenancy, governance (Phase 1)        |                  8 + 3 Auth.js |
-| Product projects (Phase 2)                     |                              4 |
-| Evidence and provenance (Phase 3)              |                              8 |
-| Economics (Phase 4)                            |                              3 |
-| Scoring, confidence, risk, readiness (Phase 5) |                             10 |
-| AI, blueprints, review (Phases 6–7)            |                              9 |
-| Reporting and learning loop (Phases 8–9)       |                              6 |
-| Public validation (Track B)                    |                              3 |
-| **Total**                                      | **51 (48 domain + 3 Auth.js)** |
+| Group                                          |  Tables |
+| ---------------------------------------------- | ------: |
+| Identity, tenancy, governance (Phase 1)        |       5 |
+| Product projects (Phase 2)                     |       4 |
+| Evidence and provenance (Phase 3)              |       8 |
+| Economics (Phase 4)                            |       3 |
+| Scoring, confidence, risk, readiness (Phase 5) |      10 |
+| AI, blueprints, review (Phases 6–7)            |       9 |
+| Reporting and learning loop (Phases 8–9)       |       6 |
+| Public validation (Track B)                    |       3 |
+| **Total (domain)**                             | **~48** |
 
-Twelve §10 entities deferred or collapsed; two added. The reductions are recorded in §2 with reasons and are reversible — each deferred entity has a named revisit trigger in `MVP_SCOPE.md` §4.2.
+Auth.js tables (**3**) are **removed** under ADR-0021. Twelve §10 entities deferred or collapsed; two added historically. The reductions are recorded in §2 with reasons and are reversible — each deferred entity has a named revisit trigger in `MVP_SCOPE.md` §4.2.
 
 ---
 
@@ -375,7 +374,7 @@ Twelve §10 entities deferred or collapsed; two added. The reductions are record
 - Every tenant table: `organization_id` leads every composite index.
 - Hot paths: `memberships (user_id)`, `memberships (organization_id, user_id)` unique, `product_projects (organization_id, status)`, `source_citations (organization_id, citable_type, citable_id)`, `audit_logs (organization_id, created_at desc)`, `ai_execution_logs (organization_id, created_at desc)`.
 - Foreign keys everywhere except the deliberate polymorphic edges (`source_citations`, `analyst_reviews.subject_id`, `audit_logs.target_id`).
-- Check constraints: scores within 0–100; `weight >= 0`; `expires_at > created_at` on invitations and support grants.
+- Check constraints: scores within 0–100; `weight >= 0`; `expires_at > created_at` on support grants (and invitations if reintroduced).
 - Partial unique indexes for soft deletes, e.g. `unique (organization_id, slug) where archived_at is null`.
 - **Cross-tenant foreign keys are structurally possible and must be prevented.** A child row must not reference a parent in another organization. Enforced by composite foreign keys carrying `organization_id` — e.g. `cost_line_items (cost_scenario_id, organization_id)` references `cost_scenarios (id, organization_id)`. This closes a gap that neither RLS nor the DAL catches on its own, and it is a Phase 1 review item for every parent-child pair added thereafter.
 

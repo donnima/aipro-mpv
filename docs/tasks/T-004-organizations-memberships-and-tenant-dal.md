@@ -1,5 +1,7 @@
 # T-004 — Organizations, Memberships, Roles, and the Tenant Data Access Layer
 
+> **Partial supersession (ADR-0021):** Product screens and organization selectors must render **inside WordPress**, not as a standalone Next.js customer portal. Keep tenant DAL / membership rules; relocate UI delivery to `aipro-platform-bridge` (Option B). Do not assume Auth.js sessions — identity comes from the WordPress bridge token. Depends on revised TASK-002 Part B + WordPress bridge foundation rather than Auth.js T-003.
+
 ## Task ID
 
 `T-004` · Phase 1 · Depends on **T-003 approved**

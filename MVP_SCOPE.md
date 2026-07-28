@@ -34,7 +34,7 @@ The operating system document describes the offer as a **"software-enabled servi
 
 - The MVP is an **internal analyst tool with a client-facing read-only surface**.
 - The **analyst** (initially the founder) is the primary user. The analyst gets full editing screens.
-- The **client** gets: sign-in, project list, read-only project view, approved report view, comments, and file upload. Nothing else.
+- The **client** gets: WordPress sign-in (same site), project list, read-only project view, approved report view, comments, and file upload — all inside WordPress. Nothing else.
 - Screens exist to make the analyst fast and the output defensible — not to let a self-serve customer run the whole workflow unaided.
 
 This cuts the screen count from 28 to **19 for v1** (see §6) without losing a single item from the §5 MVP Success Definition.
@@ -47,12 +47,14 @@ This cuts the screen count from 28 to **19 for v1** (see §6) without losing a s
 
 ### 3.1 Identity & Tenancy
 
-- Passwordless sign-in (email magic link) + Google OAuth.
-- Create an organization; be invited into an organization.
-- Four roles: `PLATFORM_ADMIN`, `ORG_ADMIN`, `ANALYST`, `CLIENT_VIEWER`.
-- Invitations with expiry, single use, and email binding.
-- Every tenant record scoped by `organization_id`, enforced server-side.
+- **WordPress-owned identity** (ADR-0021): registration, login, password reset, sessions, and profile live on the existing WordPress brand site. AIPro does **not** implement Auth.js, Clerk, Supabase Auth, magic links, Google OAuth in-app, or application passwords.
+- AIPro stores **identity mappings** only (WordPress site id + user id → internal UUID) plus organization memberships and application roles.
+- Create an organization in AIPro; membership assignment is server-side / administrator-approved (browser cannot pick an arbitrary org id).
+- Four roles: `PLATFORM_ADMIN`, `ORG_ADMIN`, `ANALYST`, `CLIENT_VIEWER` — mapped from WordPress capabilities via `aipro-platform-bridge`.
+- Product invitations may be deferred to WordPress user/capability management (no AIPro invitation token tables in Phase 1).
+- Every tenant record scoped by `organization_id`, enforced server-side (DAL + RLS).
 - Append-only audit log for material actions.
+- All product screens render **inside WordPress** (one website, one login, one navigation). The AIPro Next.js deploy is a **headless API** (and optional internal tooling), not the primary customer UI.
 
 ### 3.2 Product Projects
 
@@ -213,7 +215,7 @@ Every one of the 18 criteria in §5 of the operating system maps to a phase. Non
 
 |   # | §5 Criterion                                     | Phase                  |
 | --: | ------------------------------------------------ | ---------------------- |
-|   1 | User can sign in                                 | 1                      |
+|   1 | User can sign in via WordPress (same brand site) | 1 / WP                 |
 |   2 | Create or join an organization                   | 1                      |
 |   3 | Analyst creates a Product Project                | 2                      |
 |   4 | Product and target-market data entered           | 2                      |

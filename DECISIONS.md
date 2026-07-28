@@ -3,30 +3,31 @@
 Every architecture change must add or supersede an entry here (operating system §26).
 
 **Status values:** `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Rejected`
-All ADRs below are **`Proposed`** pending founder approval of Phase 0.
+Founder-accepted decisions after Phase 0 are marked **Accepted**. Remaining Proposed ADRs await further founder approval where noted.
 
-| ADR               | Title                                                              | Status   |
-| ----------------- | ------------------------------------------------------------------ | -------- |
-| [0001](#adr-0001) | Full-stack Next.js instead of Next.js + FastAPI                    | Proposed |
-| [0002](#adr-0002) | pnpm workspace monorepo with a single application                  | Proposed |
-| [0003](#adr-0003) | PostgreSQL with Prisma                                             | Proposed |
-| [0004](#adr-0004) | Four-layer tenant isolation including Postgres RLS in Phase 1      | Proposed |
-| [0005](#adr-0005) | Auth.js v5 with database sessions and passwordless sign-in         | Proposed |
-| [0006](#adr-0006) | Decimal money handling in TypeScript                               | Proposed |
-| [0007](#adr-0007) | Confidence removed from the composite opportunity score            | Proposed |
-| [0008](#adr-0008) | Decision is a deterministic ordered rule chain                     | Proposed |
-| [0009](#adr-0009) | Provenance via DataSource + SourceCitation                         | Proposed |
-| [0010](#adr-0010) | One reporting currency per project; manual FX rates                | Proposed |
-| [0011](#adr-0011) | Role is an enum, not a table                                       | Proposed |
-| [0012](#adr-0012) | One AuditLog; product analytics off-database                       | Proposed |
-| [0013](#adr-0013) | Hosted Postgres branch for local development instead of Docker     | Proposed |
-| [0014](#adr-0014) | No Redis; pg-boss on Postgres if async becomes necessary           | Proposed |
-| [0015](#adr-0015) | PDF via headless Chromium rendering the report HTML                | Proposed |
-| [0016](#adr-0016) | Validation site in the same repo; leads are platform-owned         | Proposed |
-| [0017](#adr-0017) | Channel readiness merged into the scoring phase                    | Proposed |
-| [0018](#adr-0018) | Analyst-led concierge model; 19 screens for v1                     | Proposed |
-| [0019](#adr-0019) | Critical-risk override restricted to ORG_ADMIN and above           | Proposed |
-| [0020](#adr-0020) | Platform-admin cross-org access requires a time-boxed SupportGrant | Proposed |
+| ADR               | Title                                                              | Status                     |
+| ----------------- | ------------------------------------------------------------------ | -------------------------- |
+| [0001](#adr-0001) | Full-stack Next.js instead of Next.js + FastAPI                    | Proposed                   |
+| [0002](#adr-0002) | pnpm workspace monorepo with a single application                  | Proposed                   |
+| [0003](#adr-0003) | PostgreSQL with Prisma                                             | Proposed                   |
+| [0004](#adr-0004) | Four-layer tenant isolation including Postgres RLS in Phase 1      | Proposed                   |
+| [0005](#adr-0005) | Auth.js v5 with database sessions and passwordless sign-in         | **Superseded by ADR-0021** |
+| [0006](#adr-0006) | Decimal money handling in TypeScript                               | Proposed                   |
+| [0007](#adr-0007) | Confidence removed from the composite opportunity score            | Proposed                   |
+| [0008](#adr-0008) | Decision is a deterministic ordered rule chain                     | Proposed                   |
+| [0009](#adr-0009) | Provenance via DataSource + SourceCitation                         | Proposed                   |
+| [0010](#adr-0010) | One reporting currency per project; manual FX rates                | Proposed                   |
+| [0011](#adr-0011) | Role is an enum, not a table                                       | Proposed                   |
+| [0012](#adr-0012) | One AuditLog; product analytics off-database                       | Proposed                   |
+| [0013](#adr-0013) | Hosted Postgres branch for local development instead of Docker     | Proposed                   |
+| [0014](#adr-0014) | No Redis; pg-boss on Postgres if async becomes necessary           | Proposed                   |
+| [0015](#adr-0015) | PDF via headless Chromium rendering the report HTML                | Proposed                   |
+| [0016](#adr-0016) | Validation site in the same repo; leads are platform-owned         | Proposed                   |
+| [0017](#adr-0017) | Channel readiness merged into the scoring phase                    | Proposed                   |
+| [0018](#adr-0018) | Analyst-led concierge model; 19 screens for v1                     | Proposed                   |
+| [0019](#adr-0019) | Critical-risk override restricted to ORG_ADMIN and above           | Proposed                   |
+| [0020](#adr-0020) | Platform-admin cross-org access requires a time-boxed SupportGrant | Proposed                   |
+| [0021](#adr-0021) | WordPress-Owned Identity and Presentation Architecture             | **Accepted**               |
 
 ---
 
@@ -113,13 +114,17 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 
 ## ADR-0005 — Auth.js v5 with database sessions and passwordless sign-in
 
+**Status:** **Superseded by [ADR-0021](#adr-0021)** (founder-approved WordPress-owned identity, 2026-07-28).
+
 **Context.** §7 prefers Auth.js and states custom password authentication should not be implemented unless necessary.
 
-**Decision.** Auth.js v5 with the Prisma adapter and **database sessions** (not JWT). Sign-in via email magic link plus Google OAuth. No passwords.
+**Decision (historical).** Auth.js v5 with the Prisma adapter and **database sessions** (not JWT). Sign-in via email magic link plus Google OAuth. No passwords.
 
-**Rationale.** No passwords means no password storage, reset flow, strength policy, or credential-stuffing surface — a large security burden removed for a B2B audience that expects SSO-style sign-in anyway. Database sessions are chosen over JWT because roles and memberships change: a JWT would carry stale authorization until expiry, whereas membership and role are read from the database per request (mitigating S-14). Revocation is immediate.
+**Rationale (historical).** No passwords means no password storage, reset flow, strength policy, or credential-stuffing surface. Database sessions were chosen so membership and role could be read from the database per request (mitigating S-14).
 
-**Consequences.** One database read per authenticated request (indexed, negligible). An email provider becomes a Phase 1 dependency. Users cannot sign in if email delivery fails — Google OAuth is the fallback path.
+**Consequences (historical).** One database read per authenticated request. An email provider would have been a Phase 1 dependency.
+
+**Supersession.** An existing WordPress website owns registration, login, password reset, sessions, profile, navigation, and all product UI. AIPro must not implement Auth.js, Clerk, Supabase Auth, magic-link sign-in, Google OAuth in-app, or any duplicate credential store. See ADR-0021 and `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`.
 
 ---
 
@@ -332,3 +337,35 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 **Rationale.** "Support access" is how multi-tenant products leak customer data, because it is usually implemented as a boolean that bypasses every check and is never reviewed. Making it an explicit, expiring, reasoned, and customer-visible record means the strongest privilege in the system leaves evidence and cannot be exercised silently. It also keeps the tenant DAL honest: the grant supplies an `organizationId` to the normal scoped path rather than introducing a bypass path.
 
 **Consequences.** Supporting a customer takes one extra deliberate step. The grant path is part of the Phase 1 isolation test suite: an expired or absent grant must produce the same 404 as any other cross-tenant request.
+
+---
+
+<a id="adr-0021"></a>
+
+## ADR-0021 — WordPress-Owned Identity and Presentation Architecture
+
+**Status:** **Accepted** (founder-approved 2026-07-28)
+
+**Context.** Phase 0 assumed a standalone Next.js customer UI with Auth.js (ADR-0005). The founder's brand website is an **existing WordPress site**. Building a second login, registration, password-reset, and customer portal would create duplicate credentials and a split user experience.
+
+**Decision.**
+
+1. **WordPress owns identity and presentation.** Public/brand pages, registration, login, password reset, session management, account/profile, WordPress roles/capabilities, menus/navigation, and **all** customer-facing and analyst-facing product screens live in WordPress.
+2. **AIPro does not create separate credentials.** No Auth.js, Clerk, Supabase Auth, custom application passwords, magic-link auth, Google OAuth in the AIPro app, or duplicate customer accounts. Never store WordPress passwords, password hashes, reset tokens, or session cookies in Neon.
+3. **AIPro backend stores only identity mappings** (internal UUID, WordPress site id, WordPress user id, organization memberships, mapped application role, status, timestamps). Email/display name may be cached only when needed for product operation. WordPress remains the identity source of truth.
+4. **All product UI appears within WordPress** via plugin `aipro-platform-bridge` (shortcodes, Gutenberg blocks, native pages, Option B bundled React). **Do not default to iframes.** Iframes require a documented technical constraint and explicit founder approval. Do not expose a second application domain as the main customer interface.
+5. **A custom WordPress integration plugin is required** for auth bridge, capability mapping, server-to-server token issuance, UI embedding, CSRF/nonce, admin config, health checks, and audit-friendly logs (no secrets).
+6. **Backend authorization remains mandatory.** Short-lived signed tokens (RS256 or EdDSA) are minted only by the trusted plugin. The API validates signature, issuer, audience, expiry, site id, user id, organization id, and mapped role — then **re-enforces** membership and permissions from Neon. Never trust browser-supplied role or organization identifiers alone.
+7. **Logical architecture:** WordPress → `aipro-platform-bridge` → Secure AIPro Backend API → Neon → AI/reporting services.
+8. **Hosting clarification:** Vercel may host the **backend API** and internal services. WordPress remains the primary customer-facing website. Neon remains the application database and must **not** be merged with the WordPress database.
+
+**Rationale.** One website, one login, one account, one navigation system matches the commercial brand site and removes an entire credential-attack surface from AIPro while preserving four-layer tenant isolation in the API and Postgres.
+
+**Consequences.**
+
+- ADR-0005 is superseded. TASK-003 (Auth.js) is superseded; see `docs/tasks/WORDPRESS-INTEGRATION-FOUNDATION.md`.
+- TASK-002 Part B schema drops Auth.js tables (`accounts`, `sessions`, `verification_tokens`). `users` become WordPress identity mappings. Invitations may be deferred to WordPress.
+- Screen delivery moves to WordPress (ADR-0018 screen list still applies as product surface, hosted in WP).
+- Companions: `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`, `docs/security/WORDPRESS-AUTH-BRIDGE-THREAT-MODEL.md`, `docs/integration/WORDPRESS-PLUGIN-TECHNICAL-SPEC.md`, `docs/integration/WORDPRESS-BACKEND-API-CONTRACT.md`.
+
+**References.** Founder decision recorded under TASK-007; see also MVP_SCOPE and ARCHITECTURE updates.

@@ -309,6 +309,10 @@ Use Python dependency management with `uv` or Poetry. Prefer `uv` for speed and 
 
 ## Authentication
 
+> **Repository supersession (ADR-0021, 2026-07-28):** The operating system's Auth.js / Clerk / Supabase Auth menu is **not** the AIPro MVP path. An existing **WordPress** site owns identity and all product UI. AIPro is a headless API with identity **mappings** only. See `DECISIONS.md` ADR-0021 and `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`.
+
+Historical OS text (retained for audit; do not implement for this product):
+
 Choose one implementation after repository audit:
 
 Preferred:

@@ -1,12 +1,15 @@
 # T-003 — Authentication
 
+> **SUPERSEDED by ADR-0021 and [`WORDPRESS-INTEGRATION-FOUNDATION.md`](./WORDPRESS-INTEGRATION-FOUNDATION.md) (2026-07-28).**  
+> Do **not** implement Auth.js, magic links, Google OAuth, sign-in pages, or Auth.js Prisma tables. WordPress owns identity and UI. Retain this file as historical reference only.
+
 ## Task ID
 
 `T-003` · Phase 1 · Depends on **T-002 approved** · Blocked until the founder supplies auth and email credentials
 
 ## Objective
 
-Implement passwordless authentication with Auth.js v5 using database sessions: email magic link plus Google OAuth, sign-in and sign-out screens, session retrieval on the server, and route protection. No organizations yet — that is T-004.
+~~Implement passwordless authentication with Auth.js v5…~~ **Cancelled.** See WordPress integration foundation task.
 
 ## Business Reason
 

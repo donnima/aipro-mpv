@@ -1,8 +1,8 @@
 # ARCHITECTURE.md — Product Intelligence Platform
 
-**Status:** Proposed — awaiting founder approval
+**Status:** Proposed — awaiting founder approval (except **ADR-0021 Accepted**: WordPress-owned identity/UI)
 **Last updated:** 2026-07-28
-**Companion documents:** `MVP_SCOPE.md`, `DECISIONS.md`, `DATA_MODEL.md`
+**Companion documents:** `MVP_SCOPE.md`, `DECISIONS.md`, `DATA_MODEL.md`, `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`
 
 ---
 
@@ -91,7 +91,7 @@ The operating system document defaults to Next.js + FastAPI but explicitly permi
 Phase 1's gate is tenant isolation: _"Do not build product projects until tenant isolation is verified."_ With one service there is exactly one place a request is authenticated and one place `organization_id` scoping is applied. Split across Next.js and FastAPI, you must first invent and secure a service-to-service auth scheme — JWT signing, key distribution, audience and expiry validation, clock skew, rotation — before writing one line of business logic. That is a new attack surface bought before any product value.
 
 **2. The preferred auth library is Next.js-native.**
-§7 prefers Auth.js. Auth.js sessions live in Next.js. Pairing it with FastAPI leaves two options: duplicate session verification in Python (two implementations of the security-critical path — the classic way isolation bugs are born), or proxy every call through Next.js — at which point FastAPI is a remote database client that adds a network hop and a deployment.
+§7 prefers Auth.js. **Historical note:** ADR-0001’s Auth.js coupling argument applied at Phase 0. **ADR-0021** later moved identity to WordPress; Auth.js is superseded. The FastAPI split remains rejected for isolation and ops reasons independent of Auth.js.
 
 **3. It removes an entire production environment.**
 Dropping the API service removes one host, one secret set, one CI job, one health check, one migration runner, one rollback procedure, and one incident surface. For a pre-incorporation, founder-led team this is not a preference; it is most of the Phase 14 workload.
@@ -126,18 +126,16 @@ A pnpm workspace monorepo, adapted from §7 — one application instead of three
 ```
 AI-MVP/
 ├── apps/
-│   └── web/                    Next.js 15 App Router — UI, route handlers, auth
+│   └── web/                    Next.js 15 — headless product API + internal/health routes
 │       ├── app/
-│       │   ├── (public)/       Landing page, survey, privacy policy
-│       │   ├── (auth)/         Sign in, accept invitation
-│       │   └── (app)/
-│       │       └── orgs/[orgSlug]/    ALL tenant-scoped screens live here
-│       ├── server/             Server-only: DAL, services, authz, audit
-│       │   ├── auth/
+│       │   ├── api/v1/         Versioned backend API (WordPress bridge is the primary client)
+│       │   └── (internal)/     Optional operator tooling — NOT the customer UI (ADR-0021)
+│       ├── server/             Server-only: DAL, services, authz, audit, token validation
+│       │   ├── auth/           WordPress bridge token verification (not Auth.js)
 │       │   ├── db/             Tenant-scoped data access layer
 │       │   ├── services/       Use cases; orchestrates core + db + audit
 │       │   └── ai/             Provider adapters, prompt registry, exec log
-│       └── e2e/                Playwright golden-path tests
+│       └── e2e/                API / isolation tests (Playwright where needed)
 ├── packages/
 │   ├── core/                   PURE domain logic. No I/O. No framework.
 │   │   ├── economics/          Landed cost, margins, break-even
@@ -145,48 +143,50 @@ AI-MVP/
 │   │   ├── confidence/         Confidence engine
 │   │   └── risk/               Risk rule evaluation
 │   ├── db/                     Prisma schema, migrations, seed, generated client
-│   ├── ui/                     shadcn/ui primitives + shared components
+│   ├── ui/                     Shared components for WP-bundled frontend (Option B)
 │   ├── types/                  Shared Zod schemas and contracts
 │   └── config/                 Shared ESLint / TS / Tailwind config
 ├── infra/
 │   └── deployment/             Deploy runbooks, env templates
 ├── docs/
-│   ├── tasks/                  Approved Cursor task specifications
-│   └── adr/
+│   ├── architecture/           WordPress integration architecture
+│   ├── integration/            Plugin + API contracts
+│   ├── security/               Threat models
+│   └── tasks/                  Approved Cursor task specifications
 └── .github/workflows/          CI
 ```
 
-**`apps/api` and `apps/worker` are deliberately absent.** `packages/scoring` from §7 is folded into `packages/core`.
+**Customer UI lives in WordPress** via plugin `aipro-platform-bridge` (Option B). **`apps/api` and `apps/worker` are deliberately absent.** `packages/scoring` from §7 is folded into `packages/core`. Do not treat Vercel-hosted Next.js as the primary customer portal.
 
 ---
 
 ## 4. Technology Choices
 
-| Layer                  | Choice                                                                          | Notes                                                          |
-| ---------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Runtime                | Node.js 22 LTS                                                                  | Pinned via `engines` + `.nvmrc`                                |
-| Package manager        | pnpm 9 via corepack                                                             | Not yet installed — T-001                                      |
-| Framework              | Next.js 15, App Router                                                          | Server Components default                                      |
-| Language               | TypeScript 5.x, `strict: true`                                                  | `noUncheckedIndexedAccess` on                                  |
-| Styling                | Tailwind CSS + shadcn/ui                                                        | Brand tokens per §20                                           |
-| Forms                  | React Hook Form + Zod                                                           | Same Zod schema validates on the server                        |
-| Tables                 | TanStack Table                                                                  | Supplier/scenario comparison                                   |
-| Client data            | TanStack Query — only where needed                                              | Default to Server Components + Server Actions                  |
-| Database               | PostgreSQL 16                                                                   |                                                                |
-| ORM                    | Prisma 6                                                                        | Mature migrations; `Decimal` mapping. ADR-0003                 |
-| Auth                   | Auth.js v5 (NextAuth), database sessions                                        | Email magic link + Google OAuth. No custom passwords. ADR-0005 |
-| Money                  | Postgres `NUMERIC(18,6)` ↔ `decimal.js`                                         | ADR-0006                                                       |
-| Storage                | S3-compatible interface; Cloudflare R2 in prod, local filesystem adapter in dev | MinIO dropped — needs Docker (B-2)                             |
-| AI                     | Anthropic + OpenAI adapters behind one interface                                | Anthropic default                                              |
-| Structured output      | Zod                                                                             |                                                                |
-| PDF                    | Headless Chromium rendering the report HTML                                     | ADR-0015                                                       |
-| Async jobs             | None in v1. `pg-boss` on Postgres if needed                                     | No Redis. ADR-0014                                             |
-| Rate limiting          | Postgres-backed fixed window                                                    | No Redis dependency                                            |
-| Unit/integration tests | Vitest                                                                          |                                                                |
-| E2E                    | Playwright                                                                      | Runs in CI; locally optional (B-1)                             |
-| Error monitoring       | Sentry                                                                          |                                                                |
-| CI                     | GitHub Actions                                                                  |                                                                |
-| Analytics              | PostHog (EU region)                                                             | Product events only — never in the app DB                      |
+| Layer                  | Choice                                                                          | Notes                                          |
+| ---------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Runtime                | Node.js 22 LTS                                                                  | Pinned via `engines` + `.nvmrc`                |
+| Package manager        | pnpm 9 via corepack                                                             | Not yet installed — T-001                      |
+| Framework              | Next.js 15, App Router                                                          | Server Components default                      |
+| Language               | TypeScript 5.x, `strict: true`                                                  | `noUncheckedIndexedAccess` on                  |
+| Styling                | Tailwind CSS + shadcn/ui                                                        | Brand tokens per §20                           |
+| Forms                  | React Hook Form + Zod                                                           | Same Zod schema validates on the server        |
+| Tables                 | TanStack Table                                                                  | Supplier/scenario comparison                   |
+| Client data            | TanStack Query — only where needed                                              | Default to Server Components + Server Actions  |
+| Database               | PostgreSQL 16                                                                   |                                                |
+| ORM                    | Prisma 6                                                                        | Mature migrations; `Decimal` mapping. ADR-0003 |
+| Auth                   | WordPress + `aipro-platform-bridge` (short-lived signed tokens)                 | No Auth.js / Clerk / app passwords. ADR-0021   |
+| Money                  | Postgres `NUMERIC(18,6)` ↔ `decimal.js`                                         | ADR-0006                                       |
+| Storage                | S3-compatible interface; Cloudflare R2 in prod, local filesystem adapter in dev | MinIO dropped — needs Docker (B-2)             |
+| AI                     | Anthropic + OpenAI adapters behind one interface                                | Anthropic default                              |
+| Structured output      | Zod                                                                             |                                                |
+| PDF                    | Headless Chromium rendering the report HTML                                     | ADR-0015                                       |
+| Async jobs             | None in v1. `pg-boss` on Postgres if needed                                     | No Redis. ADR-0014                             |
+| Rate limiting          | Postgres-backed fixed window                                                    | No Redis dependency                            |
+| Unit/integration tests | Vitest                                                                          |                                                |
+| E2E                    | Playwright                                                                      | Runs in CI; locally optional (B-1)             |
+| Error monitoring       | Sentry                                                                          |                                                |
+| CI                     | GitHub Actions                                                                  |                                                |
+| Analytics              | PostHog (EU region)                                                             | Product events only — never in the app DB      |
 
 ---
 
@@ -194,11 +194,11 @@ AI-MVP/
 
 §8 requires: _"All protected reads and writes must be scoped by `organization_id`. Never rely on frontend filtering."_ This is the Phase 1 gate. Four layers, all mandatory.
 
-### Layer 1 — Org context is derived from the URL, then verified
+### Layer 1 — Org context is derived from the trusted bridge, then verified
 
-Every tenant screen lives under `/orgs/[orgSlug]/…`. On every request the server resolves `orgSlug → Organization`, then looks up a `Membership` for the session user. **No membership → 404 (not 403 — do not confirm the organization exists).**
+Product UI lives in **WordPress**. The browser never supplies a free-choice organization id. The WordPress plugin maps the authenticated WordPress user to an AIPro user and organization membership server-side, then mints a short-lived token carrying the minimum claims. On every API request the backend validates the token and looks up a `Membership` for `(userId, organizationId)`. **No membership → 404 (not 403 — do not confirm the organization exists).**
 
-The active organization is **never** read from a cookie, header, or request body. Client-supplied tenant identifiers are the standard source of cross-tenant bugs and are structurally excluded.
+The active organization is **never** trusted solely from a cookie, header, or request body provided by the browser. Client-supplied tenant identifiers without server-side membership proof are structurally excluded (ADR-0021).
 
 ### Layer 2 — A tenant-scoped data access layer is the only way to reach the database
 
@@ -350,19 +350,19 @@ The report is composed server-side into an HTML document — the single source o
 
 ## 10. Deployment
 
-| Concern          | Choice                                                              |
-| ---------------- | ------------------------------------------------------------------- |
-| Web application  | Vercel, region `fra1` (Frankfurt)                                   |
-| Database         | Neon PostgreSQL, EU region, with branching for dev/preview          |
-| Object storage   | Cloudflare R2, EU jurisdiction                                      |
-| Email            | Resend or Postmark (magic links, invitations)                       |
-| Error monitoring | Sentry                                                              |
-| Analytics        | PostHog EU                                                          |
-| CI               | GitHub Actions: lint → typecheck → unit → integration → build → E2E |
+| Concern          | Choice                                                               |
+| ---------------- | -------------------------------------------------------------------- |
+| Web application  | WordPress (primary customer UI) + AIPro API on Vercel or containers  | Brand/UI in WP; API may be on Vercel (ADR-0021)         |
+| Database         | Neon PostgreSQL, EU region, with branching for dev/preview           | **Not** merged with the WordPress database              |
+| Object storage   | Cloudflare R2, EU jurisdiction                                       |
+| Email            | WordPress / site mail for identity; product notify via API as needed | Magic-link Auth.js email **superseded** (ADR-0005→0021) |
+| Error monitoring | Sentry                                                               |
+| Analytics        | PostHog EU                                                           |
+| CI               | GitHub Actions: lint → typecheck → unit → integration → build → E2E  |
 
 **EU region throughout** because target markets include the EU and the validation site collects EU personal data (§19). Choosing EU residency now is free; migrating later is not.
 
-**Named cost:** the AI drafting and PDF routes need `maxDuration` above the free tier's limit, which requires **Vercel Pro (~$20/user/month)**. This is a real dependency of the plan, not an optional upgrade. If the founder prefers not to pay it, the alternative is container hosting (Railway/Fly.io) for the whole app — one deployment either way. Founder decision, needed before Phase 9, not before Phase 1.
+**Named cost:** AI drafting and PDF generation (when run on the AIPro API host) may need `maxDuration` above a free serverless tier, which can require **Vercel Pro (~$20/user/month)** if the API stays on Vercel — or container hosting (Railway/Fly.io) for the API (Q6). This does **not** make Vercel the customer-facing UI; WordPress remains the primary website (ADR-0021).
 
 ---
 
@@ -370,13 +370,15 @@ The report is composed server-side into an HTML document — the single source o
 
 Never fabricated, never committed. Required by phase:
 
-- **Phase 1:** `DATABASE_URL` (Neon), `AUTH_SECRET`, `AUTH_GOOGLE_ID/SECRET`, email provider API key, `NEXTAUTH_URL`
+- **Phase 1:** `DATABASE_URL` (Neon), WordPress integration secrets (JWT signing keys / site id — never committed), `NEXTAUTH_URL` **removed** (ADR-0021)
 - **Phase 3:** R2 account id, access key, secret, bucket
 - **Phase 7:** `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
 - **Phase 11:** PostHog key
 - **Phase 13/14:** Sentry DSN, GitHub repository + Actions secrets
 
 `.env.example` documents every variable with no real values. `.env*` is git-ignored from the first commit. CI runs secret scanning (gitleaks).
+
+**Open configuration question:** Is the existing WordPress installation **single-site** or **Multisite**? Do not assume Multisite. Site ID and user mapping must be configured accordingly (see `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`).
 
 ---
 
@@ -402,7 +404,7 @@ Ranked. Each has an owning phase. Full threat model lands in `SECURITY.md` in Ph
 | S-14 | Session not invalidated on role change or org removal                 |  **Medium**  | Database sessions; membership and role read per request, not trusted from the session token                                 |    1    |
 | S-15 | Draft AI output leaking to a client viewer                            |  **Medium**  | `reviewStatus` checked in the DAL query, not only in the UI                                                                 |  7 / 8  |
 | S-16 | Server Action invoked directly, bypassing UI checks                   |  **Medium**  | Every Server Action independently re-authenticates, re-authorizes, and re-validates. UI state is never a security control   |    1    |
-| S-17 | Missing security headers, no CSRF on public forms                     |  **Medium**  | CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy`; Auth.js CSRF; origin check on public POSTs                          | 1 / 11  |
+| S-17 | Missing security headers, no CSRF on public forms                     |  **Medium**  | CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy`; WordPress nonces + CSRF on WP forms; origin checks on public POSTs  | 1 / 11  |
 | S-18 | Vulnerable dependencies                                               |  **Medium**  | `pnpm audit` + Dependabot in CI                                                                                             |    0    |
 | S-19 | Report snapshot drift — an approved report silently changing          |  **Medium**  | Immutable versioned snapshots                                                                                               |    9    |
 | S-20 | Verbose errors leaking schema or stack traces                         |   **Low**    | Generic client errors; detail to Sentry with a correlation id                                                               |    1    |

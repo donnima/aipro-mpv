@@ -60,3 +60,4 @@ Use the operating-system review format:
 - Prefer rejecting over-engineering and scope creep against `MVP_SCOPE.md`.
 - Do not write large implementation diffs while Cursor owns the same area.
 - Do not leave authoritative review content only as an uncommitted draft Cursor could mistake for instructions.
+- **ADR-0021:** Reject any plan that reintroduces Auth.js / Clerk / app passwords or a second customer-facing login portal outside WordPress without an explicit superseding ADR.

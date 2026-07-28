@@ -11,12 +11,15 @@ Claude Code performs **one consolidated audit per milestone**, not per task.
 Follow, in order of conflict resolution:
 
 1. `MVP_SCOPE.md` (product boundary)
-2. `ARCHITECTURE.md` / `DECISIONS.md` (technical constraints)
+2. `ARCHITECTURE.md` / `DECISIONS.md` (technical constraints) — **ADR-0021** (WordPress-owned identity/UI) supersedes ADR-0005
 3. `DATA_MODEL.md` (schema)
 4. Active task specs under `docs/tasks/` — **committed only**
-5. `AIPro_Zero_to_Production_Claude_Cursor_Operating_System.md`
-6. `docs/status/CURRENT_STATUS.md` — **committed only**
-7. `docs/process/AGENT-WORKFLOW.md`
+5. WordPress integration docs under `docs/architecture/`, `docs/integration/`, `docs/security/` when identity or UI is in scope
+6. `AIPro_Zero_to_Production_Claude_Cursor_Operating_System.md`
+7. `docs/status/CURRENT_STATUS.md` — **committed only**
+8. `docs/process/AGENT-WORKFLOW.md`
+
+**Hard stop:** Do not implement Auth.js, Clerk, Supabase Auth, standalone login/registration, or application passwords. Product UI belongs in WordPress (`aipro-platform-bridge`).
 
 ## Agent Lock Protocol (mandatory)
 

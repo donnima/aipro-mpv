@@ -6,7 +6,7 @@
 
 `TASK-002` · Phase 1 · Depends on **TASK-001 — APPROVED WITH FOLLOW-UP** (`docs/reviews/TASK-001-CLAUDE-REVIEW.md`)
 
-**Blocked until the founder supplies `DATABASE_URL` and `DATABASE_URL_UNPOOLED`** (Neon), and answers open questions 3, 4 and 6 in `ARCHITECTURE.md` §15. Question 3 (concierge vs self-serve) and question 4 (factor weights) do not affect this task's schema; question 6 (hosting) does not either. **Part A below may proceed immediately** — it needs no credentials.
+**Blocked until the founder supplies `DATABASE_URL` and `DATABASE_URL_UNPOOLED`** (Neon), WordPress installation details (single-site vs Multisite, site id), and answers remaining open questions as listed in `CURRENT_STATUS.md`. **Part A is complete.** Part B must follow the **ADR-0021** Phase 1 schema in `DATA_MODEL.md` §4 (WordPress identity mappings — **no** Auth.js tables).
 
 ## Objective
 
@@ -14,9 +14,9 @@ Two parts, in order.
 
 **Part A — close the TASK-001 follow-up.** Make the `packages/core` purity boundary un-bypassable and tighten CI and dependency hygiene.
 
-**Part B — stand up the database.** PostgreSQL via Prisma, the complete Phase 1 schema from `DATA_MODEL.md` §4, Row-Level Security on every tenant-owned table, and tests that _prove_ RLS blocks cross-tenant access at the database level.
+**Part B — stand up the database.** PostgreSQL via Prisma, the Phase 1 schema from `DATA_MODEL.md` §4 under **ADR-0021** (WordPress identity mappings — no credential/session tables), Row-Level Security on every tenant-owned table, and tests that _prove_ RLS blocks cross-tenant access at the database level.
 
-No authentication, no application features, no UI.
+No WordPress plugin implementation in this task. No Auth.js. No application product UI. No password storage.
 
 ## Business Reason
 
@@ -66,15 +66,15 @@ docs/DEVELOPMENT.md                     database setup section
 ### Part B — database
 
 7. Prisma 6 against PostgreSQL 16 in a new workspace package `@aipro/db`. Local development uses a **Neon development branch — no Docker, no local Postgres** (ADR-0013, blocker B-2).
-8. Implement **exactly** the eleven Phase 1 tables in `DATA_MODEL.md` §4: `users`, `accounts`, `sessions`, `verification_tokens`, `organizations`, `memberships`, `invitations`, `support_grants`, `audit_logs`. **Create no Phase 2+ table.**
+8. Implement **exactly** the Phase 1 tables in `DATA_MODEL.md` §4 under ADR-0021: `users` (WordPress identity mapping), `organizations`, `memberships`, `support_grants`, `audit_logs`. **Do not create** `accounts`, `sessions`, `verification_tokens`, password columns, or `invitations` in Phase 1. **Create no Phase 2+ table.**
 9. UUID v7 primary keys. All `DATA_MODEL.md` §1 conventions: `timestamptz` audit columns, `citext` for emails and slugs, `numeric(18,6)` reserved for money (none in this task — but introduce no `float` anywhere).
-10. Enums needed by Phase 1: `Role`, `InvitationStatus`.
-11. Enable RLS on `organizations`, `memberships`, `invitations`, `audit_logs`, with policies reading `current_setting('app.current_organization_id', true)`.
+10. Enums needed by Phase 1: `Role` only (`InvitationStatus` deferred with invitations).
+11. Enable RLS on `organizations`, `memberships`, `audit_logs`, with policies reading `current_setting('app.current_organization_id', true)`.
 12. Two database roles: an application role (RLS enforced; `INSERT` and `SELECT` only on `audit_logs`) and a migration role (RLS bypass). Document both in `docs/DEVELOPMENT.md`.
 13. `packages/db/src/rls.ts` exports a helper that opens a transaction and issues `SET LOCAL app.current_organization_id = $1`. **`SET LOCAL`, never `SET`** — a pooled connection must not carry the value into the next request.
-14. Constraints and indexes per `DATA_MODEL.md` §12, **including the composite `(id, organization_id)` unique keys** that later phases need to prevent cross-tenant foreign keys.
-15. Idempotent seed creating two unrelated organizations with distinct users — the fixture TASK-005's isolation harness will consume.
-16. Extend `/api/health` with a database reachability boolean and the applied migration count. It must **not** leak the connection string, host, schema names, or driver errors (S-20).
+14. Constraints and indexes per `DATA_MODEL.md` §12, **including the composite `(id, organization_id)` unique keys** that later phases need to prevent cross-tenant foreign keys, plus `unique (wordpress_site_id, wordpress_user_id)` on `users`.
+15. Idempotent seed creating two unrelated organizations with distinct mapped users — the fixture TASK-005's isolation harness will consume.
+16. Extend `/api/health` (and later `/api/v1/health`) with a database reachability boolean and the applied migration count. It must **not** leak the connection string, host, schema names, or driver errors (S-20).
 
 ## Technical Constraints
 
@@ -88,7 +88,7 @@ docs/DEVELOPMENT.md                     database setup section
 
 - `DATABASE_URL` from the environment only. Never committed, never logged, never in a client-visible error.
 - `audit_logs`: no `UPDATE` or `DELETE` in the schema, the DAL, or the application role's grants. Verify against `information_schema.role_table_grants` (S-13).
-- `invitations.token_hash` stores a SHA-256 hash. **No column may be capable of holding a plaintext token** (S-5).
+- `invitations.token_hash` — **N/A in Phase 1** (invitations deferred; ADR-0021). Do not add invitation token columns.
 - `support_grants`: check constraint `expires_at > created_at`. The 24-hour cap is enforced in the service layer in TASK-004 (ADR-0020).
 - Health endpoint returns a boolean, never diagnostics.
 - `.env.example` must remain all-empty. `gitleaks` must stay green.

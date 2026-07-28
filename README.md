@@ -60,7 +60,7 @@ packages/config   Shared ESLint / TS / Prettier / Tailwind
 
 ## Sign-in (later)
 
-Authentication arrives in **T-003**. Until then there is no sign-in screen. When credentials are provisioned, see `.env.example` for `AUTH_*` and email provider variables.
+Authentication is **WordPress-owned** (ADR-0021). Do not add Auth.js / standalone sign-in. Until the WordPress bridge ships, this monorepo exposes API health only. See `.env.example` for Neon and JWT verification variables (not `AUTH_*`).
 
 ## License
 

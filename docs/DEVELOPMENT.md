@@ -58,6 +58,12 @@ pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 Configured under `apps/web/playwright.config.ts`. **Do not run `playwright install` on this machine until disk free space is ≥ ~25 GB** (or accept CI-only E2E). The `pnpm test:e2e` script exists for CI.
 
-## Database (from T-002)
+## Database (from TASK-002 Part B)
 
-Not part of T-001. Local development will use a Neon development branch URL in `DATABASE_URL` — no Docker Compose on the critical path.
+Not part of T-001. Local development will use a Neon development branch URL in `DATABASE_URL` — no Docker Compose on the critical path. WordPress and Neon are **separate** databases (ADR-0021).
+
+## WordPress identity (ADR-0021)
+
+Customer-facing login and product UI live on the existing WordPress site via plugin `aipro-platform-bridge`. This monorepo’s Next.js app is the **headless API** (and local health checks), not a second customer portal. See `docs/architecture/WORDPRESS-INTEGRATION-ARCHITECTURE.md`.
+
+Do **not** configure Auth.js / `AUTH_SECRET` / Google OAuth for product auth — those variables are superseded in `.env.example`.

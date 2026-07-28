@@ -1,0 +1,67 @@
+# Product Intelligence Platform
+
+Working product name for the **AIPro MVP**: an analyst-led product opportunity and market-entry intelligence platform.
+
+This repository is a **pnpm monorepo** with a single Next.js application (ADR-0001). There is no FastAPI service.
+
+## Prerequisites
+
+- Node.js **22** (see `.nvmrc`)
+- **pnpm 9** via Corepack (`corepack enable`)
+- Git
+- A Neon PostgreSQL development branch URL — required from **T-002** onward (no local Docker/Postgres; ADR-0013)
+
+## Setup
+
+```bash
+corepack enable
+corepack prepare pnpm@9.15.4 --activate
+pnpm install
+cp .env.example .env.local   # fill values as phases require — never commit real secrets
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Health: [http://localhost:3000/api/health](http://localhost:3000/api/health).
+
+Windows notes and environment blockers: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+
+## Scripts (from repository root)
+
+| Script                              | Purpose                                                |
+| ----------------------------------- | ------------------------------------------------------ |
+| `pnpm dev`                          | Start Next.js in development                           |
+| `pnpm build`                        | Production build                                       |
+| `pnpm lint`                         | ESLint across workspace packages                       |
+| `pnpm format` / `pnpm format:check` | Prettier write / check                                 |
+| `pnpm typecheck`                    | TypeScript `--noEmit` across packages                  |
+| `pnpm test`                         | Vitest unit/integration tests                          |
+| `pnpm test:e2e`                     | Playwright (CI only until disk blocker B-1 is cleared) |
+
+## Architecture documents
+
+| Document                                                                                                                   | Role                              |
+| -------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| [`MVP_SCOPE.md`](MVP_SCOPE.md)                                                                                             | MVP boundary — what is in and out |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md)                                                                                       | Stack, tenancy, phased plan       |
+| [`DECISIONS.md`](DECISIONS.md)                                                                                             | Architecture Decision Records     |
+| [`DATA_MODEL.md`](DATA_MODEL.md)                                                                                           | Schema conventions and entities   |
+| [`AIPro_Zero_to_Production_Claude_Cursor_Operating_System.md`](AIPro_Zero_to_Production_Claude_Cursor_Operating_System.md) | Master operating system           |
+
+## Workspace layout
+
+```
+apps/web          Next.js 15 App Router application
+packages/core     Pure domain logic (no I/O — ADR-0001)
+packages/db       (T-002+) Prisma schema and tenant DAL
+packages/types    Shared contracts
+packages/ui       Shared UI primitives
+packages/config   Shared ESLint / TS / Prettier / Tailwind
+```
+
+## Sign-in (later)
+
+Authentication arrives in **T-003**. Until then there is no sign-in screen. When credentials are provisioned, see `.env.example` for `AUTH_*` and email provider variables.
+
+## License
+
+See [`LICENSE`](LICENSE).

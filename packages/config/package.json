@@ -1,0 +1,33 @@
+{
+  "name": "@aipro/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/core": "./eslint/core.js",
+    "./eslint/next": "./eslint/next.js",
+    "./prettier": "./prettier/index.cjs",
+    "./typescript/base.json": "./typescript/base.json",
+    "./typescript/next.json": "./typescript/next.json",
+    "./typescript/library.json": "./typescript/library.json",
+    "./tailwind": "./tailwind/preset.cjs"
+  },
+  "files": [
+    "eslint",
+    "prettier",
+    "typescript",
+    "tailwind"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@next/eslint-plugin-next": "^15.1.4",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-import-x": "^4.6.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.20.0"
+  }
+}

@@ -38,7 +38,7 @@ Recorded in `ARCHITECTURE.md` §1.4. Status as of T-001:
 | B-2 | No Docker / local Postgres | Deferred to T-002 — Neon hosted branch (ADR-0013).                                                                                                           |
 | B-3 | Git identity               | Cleared at repo level (`user.name` / `user.email` in `.git/config`).                                                                                         |
 | B-4 | CRLF                       | Cleared via `.gitattributes`.                                                                                                                                |
-| B-5 | No git remote / GitHub     | **Still open.** Founder must create the private GitHub repository and provide the remote URL before CI can run on a PR.                                      |
+| B-5 | No git remote / GitHub     | **Remote present:** `origin` → `https://github.com/donnima/aipro-mpv.git`. Push + PR still required to prove CI green.                                       |
 | B-6 | Secrets                    | Not required for T-001. Listed empty in `.env.example`.                                                                                                      |
 | B-7 | Branch / `.gitignore`      | Cleared: branch is `main`; `.gitignore` excludes `.env*` and `.claude/settings.local.json`.                                                                  |
 

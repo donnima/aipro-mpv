@@ -1,0 +1,29 @@
+{
+  "name": "aipro",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Product Intelligence Platform — AIPro MVP monorepo",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=9 <10"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @aipro/web dev",
+    "build": "pnpm -r --filter=./packages/* build && pnpm --filter @aipro/web build",
+    "lint": "pnpm -r --if-present lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "pnpm --filter @aipro/web test:e2e"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}

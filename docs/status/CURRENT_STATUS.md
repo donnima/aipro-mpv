@@ -1,24 +1,24 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (Founder Decisions Extraction — lock acquired)
+**Last updated:** 2026-07-28 (Founder Decisions Extraction complete — lock released)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Active Agent**                | `Cursor`                                                                                                                           |
-| **Write Lock Owner**            | `Cursor`                                                                                                                           |
-| **Active Task**                 | `Founder Decisions Extraction`                                                                                                     |
-| **Authoritative Commit**        | `c7b32a9`                                                                                                                          |
-| **Allowed Paths**               | `docs/decisions/`, `docs/status/`, `docs/reviews/`                                                                                 |
-| **Forbidden Paths**             | `apps/`, `packages/`, `prisma/`, database files, migrations                                                                        |
-| **Next Action**                 | Cursor extracts Q3/Q4/Q6 into `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`                                                        |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                         |
-| **Authoritative Review Commit** | `780e627`                                                                                                                          |
-| **Cursor Action Permitted**     | `yes` — documentation-only extraction of Q3/Q4/Q6; no Prisma, schema, RLS, auth, or application changes                            |
+| Field                           | Value                                                                                                                                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `none`                                                                                                                                                                                             |
+| **Write Lock Owner**            | `none`                                                                                                                                                                                             |
+| **Active Task**                 | `none`                                                                                                                                                                                             |
+| **Authoritative Commit**        | `dbb8110` (lock-acquire commit for this extraction; extraction commit becomes baseline once landed)                                                                                                |
+| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                   |
+| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                  |
+| **Next Action**                 | Founder review of Q3/Q4/Q6 in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`. After answers (and Neon credentials), grant Cursor the write lock for TASK-002 Part B via a committed status update. |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                        |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                          |
+| **Cursor Action Permitted**     | `no`                                                                                                                                                                                               |
 
 ---
 
@@ -38,7 +38,7 @@
 
 ## Where the project stands
 
-Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed and verified. Agent Lock Protocol added to prevent agents from acting on undelivered drafts. No database, authentication, tenancy, or product surface exists yet.
+Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed and verified. Agent Lock Protocol in force. Blocking founder questions Q3/Q4/Q6 extracted to `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` (awaiting founder answers). No database, authentication, tenancy, or product surface exists yet.
 
 ---
 
@@ -76,23 +76,23 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 
 ## Blocked on the founder
 
-| #   | Item                                                        | Blocks                                      |
-| --- | ----------------------------------------------------------- | ------------------------------------------- |
-| —   | `DATABASE_URL` + `DATABASE_URL_UNPOOLED` (Neon)             | TASK-002 Part B and all of Phase 1 after it |
-| Q3  | Confirm analyst-led concierge, not self-serve SaaS          | Phase 2 scope; ADR-0018                     |
-| Q4  | Approve factor-weight redistribution (Demand 17, Margin 18) | Phase 5; ADR-0007                           |
-| Q5  | Confirm Critical-risk override is `ORG_ADMIN`+              | TASK-004; ADR-0019                          |
-| Q6  | Vercel Pro vs container hosting                             | Phase 8 PDF path; ADR-0015                  |
-| Q7  | Confirm Amazon US + Shopify/DTC only for v1                 | Phase 5 readiness templates                 |
-| Q8  | Data controller for EU leads pre-incorporation              | Track B privacy policy                      |
-| A-5 | Close Dependabot PRs #1–#12 without merging                 | Hygiene only, not a gate                    |
-| —   | Rename repo `aipro-mpv` → `aipro-mvp`?                      | Housekeeping, free while empty              |
+| #   | Item                                                        | Blocks                                                                                                       |
+| --- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| —   | `DATABASE_URL` + `DATABASE_URL_UNPOOLED` (Neon)             | TASK-002 Part B and all of Phase 1 after it                                                                  |
+| Q3  | Confirm analyst-led concierge, not self-serve SaaS          | Phase 2 scope; ADR-0018 — see [FOUNDER-DECISIONS-Q3-Q4-Q6.md](../decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md)    |
+| Q4  | Approve factor-weight redistribution (Demand 17, Margin 18) | Phase 5; ADR-0007 — see [FOUNDER-DECISIONS-Q3-Q4-Q6.md](../decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md)          |
+| Q5  | Confirm Critical-risk override is `ORG_ADMIN`+              | TASK-004; ADR-0019                                                                                           |
+| Q6  | Vercel Pro vs container hosting                             | Phase 8 PDF path; ADR-0015 — see [FOUNDER-DECISIONS-Q3-Q4-Q6.md](../decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md) |
+| Q7  | Confirm Amazon US + Shopify/DTC only for v1                 | Phase 5 readiness templates                                                                                  |
+| Q8  | Data controller for EU leads pre-incorporation              | Track B privacy policy                                                                                       |
+| A-5 | Close Dependabot PRs #1–#12 without merging                 | Hygiene only, not a gate                                                                                     |
+| —   | Rename repo `aipro-mpv` → `aipro-mvp`?                      | Housekeeping, free while empty                                                                               |
 
 **All 20 ADRs remain `Proposed`.** Nothing built so far conflicts with them.
 
 ---
 
-## Quality gates — last verified 2026-07-28 (Agent Lock Protocol, Cursor)
+## Quality gates — last verified 2026-07-28 (Founder Decisions Extraction, Cursor)
 
 | Gate                       | Result                                   |
 | -------------------------- | ---------------------------------------- |
@@ -108,13 +108,14 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 
 ## Phase gates
 
-| Gate                                  | Condition                                              | Status                                              |
-| ------------------------------------- | ------------------------------------------------------ | --------------------------------------------------- |
-| Phase 0                               | Baseline builds, lints, typechecks, tests, CI runs     | **PASSED**                                          |
-| TASK-002 Part A                       | F-1…F-5 and A-1…A-4 closed and verified                | **PASSED**                                          |
-| Agent Lock Protocol                   | Write-lock fields + validator                          | **IN THIS COMMIT**                                  |
-| TASK-002 Part B                       | Schema + RLS proven                                    | **BLOCKED** on `DATABASE_URL` and founder decisions |
-| **Phase 1 isolation gate (TASK-005)** | **Tenant isolation proven by the adversarial harness** | Not started — **no product data until this passes** |
+| Gate                                    | Condition                                               | Status                                              |
+| --------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- |
+| Phase 0                                 | Baseline builds, lints, typechecks, tests, CI runs      | **PASSED**                                          |
+| TASK-002 Part A                         | F-1…F-5 and A-1…A-4 closed and verified                 | **PASSED**                                          |
+| Agent Lock Protocol                     | Write-lock fields + validator                           | **PASSED** (`c7b32a9`)                              |
+| Founder Decisions Extraction (Q3/Q4/Q6) | Brief in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` | **DONE** — awaiting founder answers                 |
+| TASK-002 Part B                         | Schema + RLS proven                                     | **BLOCKED** on `DATABASE_URL` and founder decisions |
+| **Phase 1 isolation gate (TASK-005)**   | **Tenant isolation proven by the adversarial harness**  | Not started — **no product data until this passes** |
 
 ---
 

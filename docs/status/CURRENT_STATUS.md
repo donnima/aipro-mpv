@@ -1,24 +1,24 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (Agent Lock Protocol established)
+**Last updated:** 2026-07-28 (Founder Decisions Extraction — lock acquired)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                                                                                                                                  |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Active Agent**                | `none`                                                                                                                                                                                                                                 |
-| **Write Lock Owner**            | `none`                                                                                                                                                                                                                                 |
-| **Active Task**                 | `none`                                                                                                                                                                                                                                 |
-| **Authoritative Commit**        | `0e23ead` (baseline before Agent Lock Protocol commit; protocol commit becomes baseline once landed)                                                                                                                                   |
-| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                                                       |
-| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                                                      |
-| **Next Action**                 | Founder: place Neon `DATABASE_URL` + `DATABASE_URL_UNPOOLED` in a gitignored `.env.local`, then grant **Write Lock Owner** to Cursor for **TASK-002 Part B** only via a committed status update. Until then, no Part B implementation. |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                                                            |
-| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                                                              |
-| **Cursor Action Permitted**     | `no` — Part B not issued; credentials still required                                                                                                                                                                                   |
+| Field                           | Value                                                                                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `Cursor`                                                                                                                           |
+| **Write Lock Owner**            | `Cursor`                                                                                                                           |
+| **Active Task**                 | `Founder Decisions Extraction`                                                                                                     |
+| **Authoritative Commit**        | `c7b32a9`                                                                                                                          |
+| **Allowed Paths**               | `docs/decisions/`, `docs/status/`, `docs/reviews/`                                                                                 |
+| **Forbidden Paths**             | `apps/`, `packages/`, `prisma/`, database files, migrations                                                                        |
+| **Next Action**                 | Cursor extracts Q3/Q4/Q6 into `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`                                                        |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                         |
+| **Authoritative Review Commit** | `780e627`                                                                                                                          |
+| **Cursor Action Permitted**     | `yes` — documentation-only extraction of Q3/Q4/Q6; no Prisma, schema, RLS, auth, or application changes                            |
 
 ---
 

@@ -74,19 +74,27 @@ Every committed status update must include these fields:
 | ------------------------ | ----------------------------------------------------------------- |
 | **Active Agent**         | Who is currently expected to act (`Cursor` \| `Claude` \| `none`) |
 | **Write Lock Owner**     | Who may write (`Cursor` \| `Claude` \| `Founder` \| `none`)       |
-| **Active Task**          | Task id or `none`                                                 |
+| **Active Task**          | Formal task id (`TASK-XXX`) or `none` — not a free-text label     |
 | **Authoritative Commit** | Git commit SHA that status claims as baseline                     |
-| **Allowed Paths**        | Paths the lock owner may change                                   |
+| **Allowed Paths**        | Paths the lock owner may change (missing dirs may be created)     |
 | **Forbidden Paths**      | Paths the lock owner must not change                              |
 | **Next Action**          | Exact next step and who performs it                               |
 
+When the founder grants a lock (or overrides idle/`none`), status should also record:
+
+| Field                       | Meaning                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| **Founder Authorization**   | Short note that the founder directed the lock grant / path scope |
+| **Cursor Action Permitted** | `yes` only when founder/status explicitly allows Cursor to act   |
+
+Active work requires a **committed** task spec under `docs/tasks/` whose id matches **Active Task** (AGENTS.md authority item 4). Do not use informal Active Task labels without a matching `docs/tasks/TASK-*.md`. Listing a directory under **Allowed Paths** permits creating that directory if it does not yet exist.
+
 When Cursor may act on a Claude review, status must also record:
 
-| Field                           | Meaning                                             |
-| ------------------------------- | --------------------------------------------------- |
-| **Authoritative Review**        | Committed path to the Claude review                 |
-| **Authoritative Review Commit** | Commit SHA that introduced that review              |
-| **Cursor Action Permitted**     | `yes` only when founder/status explicitly allows it |
+| Field                           | Meaning                                |
+| ------------------------------- | -------------------------------------- |
+| **Authoritative Review**        | Committed path to the Claude review    |
+| **Authoritative Review Commit** | Commit SHA that introduced that review |
 
 Cursor may follow a Claude review **only if all** are true:
 

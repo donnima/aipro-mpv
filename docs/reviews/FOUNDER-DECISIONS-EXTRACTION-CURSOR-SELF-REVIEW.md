@@ -1,18 +1,22 @@
-# FOUNDER-DECISIONS-EXTRACTION — Cursor Self-Review
+# TASK-006 — Founder Decisions Extraction — Cursor Self-Review
 
 **Implementer:** Cursor  
 **Date:** 2026-07-28  
-**Scope:** Documentation-only extraction of unresolved founder questions Q3, Q4, and Q6  
-**Lock acquire commit:** `dbb8110`  
-**Baseline before lock:** `c7b32a9`
+**Task:** [`TASK-006`](../tasks/TASK-006-founder-decisions-extraction.md)  
+**Scope:** Documentation-only extraction of Q3/Q4/Q6 + Agent Lock process remediation  
+**Extraction commits:** lock `dbb8110`, deliverable `6a7fde9`  
+**Remediation lock:** `894828e`  
+**Baseline before original lock:** `c7b32a9`
 
 ---
 
 ## Task Completed
 
-Extracted blocking founder architecture questions Q3, Q4, and Q6 from Phase 0 /
-architecture sources into a single decision brief for founder review. Released the
-documentation-only write lock afterward.
+1. Extracted blocking founder architecture questions Q3, Q4, and Q6 into
+   `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`.
+2. Remediated process debt (Bugs 1–4): formal `TASK-006` spec, TASK-XXX Active Task,
+   recorded founder authorization, Authoritative Commit aligned to landed work,
+   clarified that Allowed Paths may create missing directories (`docs/decisions/` now exists).
 
 **Explicitly not done:**
 
@@ -23,31 +27,30 @@ documentation-only write lock afterward.
 
 ---
 
-## Files Changed
+## Verification of reported issues
 
-| Path                                                              | Change                                      |
-| ----------------------------------------------------------------- | ------------------------------------------- |
-| `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`                    | **NEW** — Q3/Q4/Q6 extraction brief         |
-| `docs/reviews/FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md` | **NEW** — this file                         |
-| `docs/status/CURRENT_STATUS.md`                                   | Lock released; Next Action → founder review |
-
-Lock acquisition was committed separately as `dbb8110` (`docs: acquire Cursor lock for founder decisions extraction`).
-
----
-
-## Sources inspected
-
-- `ARCHITECTURE.md` §10, §15
-- `MVP_SCOPE.md` §2, C-4
-- `DECISIONS.md` ADR-0007, ADR-0015, ADR-0018
-- `DATA_MODEL.md` §7 (factor definitions; Phase 5)
-- `docs/tasks/TASK-002.md`
-- `docs/status/CURRENT_STATUS.md`
-- Related reviews / handoffs referencing Q3/Q4/Q6 blockers
+| Bug | Claim                                                        | Verified?                                                                         | Disposition                                                                                                 |
+| --- | ------------------------------------------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1   | Lock transfer without committed founder auth / informal task | **Yes** on `dbb8110`                                                              | Fixed: `Founder Authorization` field + TASK-006 spec; founder re-authorized remediation in committed status |
+| 2   | No committed `docs/tasks/` spec                              | **Yes**                                                                           | Fixed: `docs/tasks/TASK-006-founder-decisions-extraction.md`                                                |
+| 3   | Active Task free-text vs TASK-XXX                            | **Yes** on `dbb8110` (`Founder Decisions Extraction`); idle status already `none` | Fixed going forward: Active Task `TASK-006` / protocol text requires `TASK-XXX`                             |
+| 4   | `docs/decisions/` missing when Allowed                       | **Yes** at lock-acquire time; **No** after `6a7fde9` (dir+file exist)             | Clarified in AGENT-WORKFLOW: Allowed Paths may create missing dirs                                          |
 
 ---
 
-## Lock state after this commit
+## Files Changed (extraction + remediation)
+
+| Path                                                              | Change                                              |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
+| `docs/tasks/TASK-006-founder-decisions-extraction.md`             | **NEW** — authoritative task spec                   |
+| `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`                    | Brief (+ TASK-006 link)                             |
+| `docs/reviews/FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md` | This self-review (updated for remediation)          |
+| `docs/process/AGENT-WORKFLOW.md`                                  | TASK-XXX Active Task; Allowed Paths may create dirs |
+| `docs/status/CURRENT_STATUS.md`                                   | Lock fields, ledger, Authoritative Commit           |
+
+---
+
+## Lock state after remediation commit
 
 | Field                   | Value                      |
 | ----------------------- | -------------------------- |
@@ -64,7 +67,7 @@ Lock acquisition was committed separately as `dbb8110` (`docs: acquire Cursor lo
 - No secrets touched; no `.env` files created or committed.
 - No database or product code modified.
 - Recommendations labeled as recommendations only; founder must decide.
-- Allowed paths during work: `docs/decisions/`, `docs/status/`, `docs/reviews/` only.
+- Founder authorization recorded in committed status for remediation lock.
 
 ---
 
@@ -84,14 +87,14 @@ pnpm build
 
 ## Results
 
-| Command                    | Result                               |
-| -------------------------- | ------------------------------------ |
-| `pnpm validate:agent-lock` | **0** — OK                           |
-| `pnpm format:check`        | **0**                                |
-| `pnpm lint`                | **0**                                |
-| `pnpm typecheck`           | **0**                                |
-| `pnpm test`                | **0** — 4 files, **25** tests passed |
-| `pnpm build`               | **0** — Next.js 15.5.22              |
+| Command                    | Result                           |
+| -------------------------- | -------------------------------- |
+| `pnpm validate:agent-lock` | _(filled after remediation run)_ |
+| `pnpm format:check`        | _(filled after remediation run)_ |
+| `pnpm lint`                | _(filled after remediation run)_ |
+| `pnpm typecheck`           | _(filled after remediation run)_ |
+| `pnpm test`                | _(filled after remediation run)_ |
+| `pnpm build`               | _(filled after remediation run)_ |
 
 ---
 
@@ -100,10 +103,10 @@ pnpm build
 - Q3/Q4/Q6 remain unanswered until the founder acts; Part B stays blocked.
 - Neon credentials are a separate blocker not resolved by this extraction.
 - Q5, Q7, Q8, and A-5 are still open and intentionally out of scope here.
-- TASK-002 notes Q3/Q4/Q6 do not affect Part B schema; the process gate is preserved anyway.
+- Historical commits `dbb8110` / early status still show the informal Active Task label; fixed forward, not rewritten.
 
 ---
 
 ## Ready for
 
-Founder review of `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`. No Claude milestone audit requested for this documentation-only extraction.
+Founder review of `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`. No Claude milestone audit requested for this documentation-only task.

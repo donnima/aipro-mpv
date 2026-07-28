@@ -1,25 +1,25 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (TASK-006 process remediation — lock acquired)
+**Last updated:** 2026-07-28 (TASK-006 complete — lock released)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                                                                                                 |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Active Agent**                | `Cursor`                                                                                                                                                                                              |
-| **Write Lock Owner**            | `Cursor`                                                                                                                                                                                              |
-| **Active Task**                 | `TASK-006`                                                                                                                                                                                            |
-| **Authoritative Commit**        | `6a7fde9`                                                                                                                                                                                             |
-| **Allowed Paths**               | `docs/tasks/`, `docs/decisions/`, `docs/status/`, `docs/reviews/`, `docs/process/`                                                                                                                     |
-| **Forbidden Paths**             | `apps/`, `packages/`, `prisma/`, database files, migrations                                                                                                                                           |
-| **Next Action**                 | Cursor remediates Agent Lock process debt for the Q3/Q4/Q6 extraction: commit `docs/tasks/TASK-006-founder-decisions-extraction.md`, align status/self-review to TASK-XXX, then release the lock. |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                           |
-| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                             |
-| **Cursor Action Permitted**     | `yes` — founder-authorized documentation-only process remediation for TASK-006; no Prisma, schema, RLS, auth, or application changes                                                                  |
-| **Founder Authorization**       | Founder directed Cursor to verify and fix Agent Lock process issues on the Q3/Q4/Q6 extraction (committed status grant in this update)                                                                |
+| Field                           | Value                                                                                                                                                                                                                                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `none`                                                                                                                                                                                                                                                                                                   |
+| **Write Lock Owner**            | `none`                                                                                                                                                                                                                                                                                                   |
+| **Active Task**                 | `none`                                                                                                                                                                                                                                                                                                   |
+| **Authoritative Commit**        | `894828e` (TASK-006 remediation lock-acquire; remediation deliverable commit becomes baseline once landed)                                                                                                                                                                                               |
+| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                                                                                                                         |
+| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                                                                                                                        |
+| **Next Action**                 | Founder review of Q3/Q4/Q6 in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` (task [`TASK-006`](../tasks/TASK-006-founder-decisions-extraction.md)). After answers (and Neon credentials), grant Cursor the write lock for TASK-002 Part B via a committed status update with **Founder Authorization**. |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                                                                                                                              |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                                                                                                                                |
+| **Cursor Action Permitted**     | `no`                                                                                                                                                                                                                                                                                                     |
+| **Founder Authorization**       | `none` — idle                                                                                                                                                                                                                                                                                            |
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## Where the project stands
 
-Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed and verified. Agent Lock Protocol in force. Blocking founder questions Q3/Q4/Q6 extracted to `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` (awaiting founder answers). No database, authentication, tenancy, or product surface exists yet.
+Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed and verified. Agent Lock Protocol in force. **TASK-006** extracted Q3/Q4/Q6 to `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` and remediated process debt (formal task spec, TASK-XXX Active Task, founder-auth field). Awaiting founder answers. No database, authentication, tenancy, or product surface exists yet.
 
 ---
 
@@ -50,6 +50,7 @@ Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted; follow-ups closed
 | TASK-001        | Repository and tooling baseline           | APPROVED WITH FOLLOW-UP                                      | [TASK-001-CLAUDE-REVIEW.md](../reviews/TASK-001-CLAUDE-REVIEW.md)                                                                   |
 | TASK-002 Part A | Purity boundary, CI, Dependabot hardening | **APPROVED WITH FOLLOW-UP — follow-ups closed**              | [TASK-002-PART-A-CLAUDE-REVIEW.md](../reviews/TASK-002-PART-A-CLAUDE-REVIEW.md) (includes post-review re-verification of `ba2b5f3`) |
 | TASK-002 Part B | Database foundation and tenancy schema    | **BLOCKED** — no `DATABASE_URL`; founder Q3/Q4/Q6 unanswered | —                                                                                                                                   |
+| TASK-006        | Founder decisions extraction (Q3/Q4/Q6)   | **COMPLETE** — brief + process remediation                   | [FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md](../reviews/FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md)                 |
 | TASK-003        | Authentication                            | Draft, blocked on Part B                                     | —                                                                                                                                   |
 | TASK-004        | Organizations, memberships, tenant DAL    | Draft, blocked on Part B                                     | —                                                                                                                                   |
 | TASK-005        | Tenant isolation gate                     | Draft, blocked on Part B                                     | —                                                                                                                                   |
@@ -93,30 +94,30 @@ Confirmed by Claude directly against `ba2b5f3` — fresh adversarial probes, not
 
 ---
 
-## Quality gates — last verified 2026-07-28 (Founder Decisions Extraction, Cursor)
+## Quality gates — last verified 2026-07-28 (TASK-006 remediation, Cursor)
 
 | Gate                       | Result                                   |
 | -------------------------- | ---------------------------------------- |
-| `pnpm validate:agent-lock` | pass                                     |
-| `pnpm format:check`        | pass                                     |
-| `pnpm lint`                | pass                                     |
-| `pnpm typecheck`           | pass                                     |
-| `pnpm test`                | pass — **25** tests, 4 files             |
-| `pnpm build`               | pass — Next.js 15.5.22                   |
+| `pnpm validate:agent-lock` | _(pending run)_                          |
+| `pnpm format:check`        | _(pending run)_                          |
+| `pnpm lint`                | _(pending run)_                          |
+| `pnpm typecheck`           | _(pending run)_                          |
+| `pnpm test`                | _(pending run)_                          |
+| `pnpm build`               | _(pending run)_                          |
 | CI run for `a5655a7`       | success — run `30341374040` (historical) |
 
 ---
 
 ## Phase gates
 
-| Gate                                    | Condition                                               | Status                                              |
-| --------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- |
-| Phase 0                                 | Baseline builds, lints, typechecks, tests, CI runs      | **PASSED**                                          |
-| TASK-002 Part A                         | F-1…F-5 and A-1…A-4 closed and verified                 | **PASSED**                                          |
-| Agent Lock Protocol                     | Write-lock fields + validator                           | **PASSED** (`c7b32a9`)                              |
-| Founder Decisions Extraction (Q3/Q4/Q6) | Brief in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` | **DONE** — awaiting founder answers                 |
-| TASK-002 Part B                         | Schema + RLS proven                                     | **BLOCKED** on `DATABASE_URL` and founder decisions |
-| **Phase 1 isolation gate (TASK-005)**   | **Tenant isolation proven by the adversarial harness**  | Not started — **no product data until this passes** |
+| Gate                                    | Condition                                                           | Status                                              |
+| --------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- |
+| Phase 0                                 | Baseline builds, lints, typechecks, tests, CI runs                  | **PASSED**                                          |
+| TASK-002 Part A                         | F-1…F-5 and A-1…A-4 closed and verified                             | **PASSED**                                          |
+| Agent Lock Protocol                     | Write-lock fields + validator                                       | **PASSED** (`c7b32a9`)                              |
+| Founder Decisions Extraction (TASK-006) | Brief in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md` + task spec | **COMPLETE** — awaiting founder answers             |
+| TASK-002 Part B                         | Schema + RLS proven                                                 | **BLOCKED** on `DATABASE_URL` and founder decisions |
+| **Phase 1 isolation gate (TASK-005)**   | **Tenant isolation proven by the adversarial harness**              | Not started — **no product data until this passes** |
 
 ---
 

@@ -1,9 +1,10 @@
 # Founder Decisions — Q3, Q4, Q6
 
 **Status:** Awaiting founder answers. No decision is recorded here.  
+**Task:** [`TASK-006`](../tasks/TASK-006-founder-decisions-extraction.md)  
 **Prepared by:** Cursor (documentation-only lock)  
 **Date:** 2026-07-28  
-**Authoritative sources:** `ARCHITECTURE.md` §15; `MVP_SCOPE.md`; `DECISIONS.md` (ADR-0007, ADR-0015, ADR-0018); `docs/tasks/TASK-002.md`; `docs/status/CURRENT_STATUS.md`
+**Authoritative sources:** `ARCHITECTURE.md` §15; `MVP_SCOPE.md`; `DECISIONS.md` (ADR-0007, ADR-0015, ADR-0018); `docs/tasks/TASK-002.md`; `docs/tasks/TASK-006-founder-decisions-extraction.md`; `docs/status/CURRENT_STATUS.md`
 
 This brief extracts the three open architecture questions that the process gate treats as blockers for issuing **TASK-002 Part B**. It does **not** accept or reject any ADR on the founder's behalf.
 

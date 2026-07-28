@@ -4,6 +4,16 @@ All notable changes to this project are documented here. Completed phases also u
 
 ## [Unreleased]
 
+### TASK-002 Part A — Repository boundary and CI hardening
+
+- `packages/core` purity rule now blocks dynamic `import()` and `require()` of banned modules (`no-restricted-syntax`).
+- Node builtins banned from `module.builtinModules` (bare + `node:`), not a hand-written subset.
+- `packages/core/src/purity.test.ts` self-tests the boundary via the ESLint Node API.
+- CI workflow declares `permissions: contents: read`.
+- Dependabot ignores major bumps for toolchain packages; groups updates; `@types/node` pinned to Node 22 (`~22.20.1`).
+- CI run #1 on `a5655a7` confirmed **success** via GitHub API.
+- `docs/TESTING.md` documents purity limits (`fetch`, `process.env`, dynamic ids).
+
 ### Phase 0 — Repository and tooling baseline (T-001)
 
 - pnpm workspace monorepo with `apps/web` and `packages/{config,core,types,ui}`.

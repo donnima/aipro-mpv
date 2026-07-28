@@ -1,24 +1,25 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (Founder Decisions Extraction complete — lock released)
+**Last updated:** 2026-07-28 (TASK-006 process remediation — lock acquired)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Active Agent**                | `none`                                                                                                                                                                                             |
-| **Write Lock Owner**            | `none`                                                                                                                                                                                             |
-| **Active Task**                 | `none`                                                                                                                                                                                             |
-| **Authoritative Commit**        | `dbb8110` (lock-acquire commit for this extraction; extraction commit becomes baseline once landed)                                                                                                |
-| **Allowed Paths**               | `none` — no agent holds the lock                                                                                                                                                                   |
-| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                                                                                                  |
-| **Next Action**                 | Founder review of Q3/Q4/Q6 in `docs/decisions/FOUNDER-DECISIONS-Q3-Q4-Q6.md`. After answers (and Neon credentials), grant Cursor the write lock for TASK-002 Part B via a committed status update. |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                        |
-| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                          |
-| **Cursor Action Permitted**     | `no`                                                                                                                                                                                               |
+| Field                           | Value                                                                                                                                                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `Cursor`                                                                                                                                                                                              |
+| **Write Lock Owner**            | `Cursor`                                                                                                                                                                                              |
+| **Active Task**                 | `TASK-006`                                                                                                                                                                                            |
+| **Authoritative Commit**        | `6a7fde9`                                                                                                                                                                                             |
+| **Allowed Paths**               | `docs/tasks/`, `docs/decisions/`, `docs/status/`, `docs/reviews/`, `docs/process/`                                                                                                                     |
+| **Forbidden Paths**             | `apps/`, `packages/`, `prisma/`, database files, migrations                                                                                                                                           |
+| **Next Action**                 | Cursor remediates Agent Lock process debt for the Q3/Q4/Q6 extraction: commit `docs/tasks/TASK-006-founder-decisions-extraction.md`, align status/self-review to TASK-XXX, then release the lock. |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                                                                                           |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                                                                             |
+| **Cursor Action Permitted**     | `yes` — founder-authorized documentation-only process remediation for TASK-006; no Prisma, schema, RLS, auth, or application changes                                                                  |
+| **Founder Authorization**       | Founder directed Cursor to verify and fix Agent Lock process issues on the Q3/Q4/Q6 extraction (committed status grant in this update)                                                                |
 
 ---
 

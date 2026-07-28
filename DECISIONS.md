@@ -5,32 +5,33 @@ Every architecture change must add or supersede an entry here (operating system 
 **Status values:** `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Rejected`
 All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 
-| ADR | Title | Status |
-|---|---|---|
-| [0001](#adr-0001) | Full-stack Next.js instead of Next.js + FastAPI | Proposed |
-| [0002](#adr-0002) | pnpm workspace monorepo with a single application | Proposed |
-| [0003](#adr-0003) | PostgreSQL with Prisma | Proposed |
-| [0004](#adr-0004) | Four-layer tenant isolation including Postgres RLS in Phase 1 | Proposed |
-| [0005](#adr-0005) | Auth.js v5 with database sessions and passwordless sign-in | Proposed |
-| [0006](#adr-0006) | Decimal money handling in TypeScript | Proposed |
-| [0007](#adr-0007) | Confidence removed from the composite opportunity score | Proposed |
-| [0008](#adr-0008) | Decision is a deterministic ordered rule chain | Proposed |
-| [0009](#adr-0009) | Provenance via DataSource + SourceCitation | Proposed |
-| [0010](#adr-0010) | One reporting currency per project; manual FX rates | Proposed |
-| [0011](#adr-0011) | Role is an enum, not a table | Proposed |
-| [0012](#adr-0012) | One AuditLog; product analytics off-database | Proposed |
-| [0013](#adr-0013) | Hosted Postgres branch for local development instead of Docker | Proposed |
-| [0014](#adr-0014) | No Redis; pg-boss on Postgres if async becomes necessary | Proposed |
-| [0015](#adr-0015) | PDF via headless Chromium rendering the report HTML | Proposed |
-| [0016](#adr-0016) | Validation site in the same repo; leads are platform-owned | Proposed |
-| [0017](#adr-0017) | Channel readiness merged into the scoring phase | Proposed |
-| [0018](#adr-0018) | Analyst-led concierge model; 19 screens for v1 | Proposed |
-| [0019](#adr-0019) | Critical-risk override restricted to ORG_ADMIN and above | Proposed |
+| ADR               | Title                                                              | Status   |
+| ----------------- | ------------------------------------------------------------------ | -------- |
+| [0001](#adr-0001) | Full-stack Next.js instead of Next.js + FastAPI                    | Proposed |
+| [0002](#adr-0002) | pnpm workspace monorepo with a single application                  | Proposed |
+| [0003](#adr-0003) | PostgreSQL with Prisma                                             | Proposed |
+| [0004](#adr-0004) | Four-layer tenant isolation including Postgres RLS in Phase 1      | Proposed |
+| [0005](#adr-0005) | Auth.js v5 with database sessions and passwordless sign-in         | Proposed |
+| [0006](#adr-0006) | Decimal money handling in TypeScript                               | Proposed |
+| [0007](#adr-0007) | Confidence removed from the composite opportunity score            | Proposed |
+| [0008](#adr-0008) | Decision is a deterministic ordered rule chain                     | Proposed |
+| [0009](#adr-0009) | Provenance via DataSource + SourceCitation                         | Proposed |
+| [0010](#adr-0010) | One reporting currency per project; manual FX rates                | Proposed |
+| [0011](#adr-0011) | Role is an enum, not a table                                       | Proposed |
+| [0012](#adr-0012) | One AuditLog; product analytics off-database                       | Proposed |
+| [0013](#adr-0013) | Hosted Postgres branch for local development instead of Docker     | Proposed |
+| [0014](#adr-0014) | No Redis; pg-boss on Postgres if async becomes necessary           | Proposed |
+| [0015](#adr-0015) | PDF via headless Chromium rendering the report HTML                | Proposed |
+| [0016](#adr-0016) | Validation site in the same repo; leads are platform-owned         | Proposed |
+| [0017](#adr-0017) | Channel readiness merged into the scoring phase                    | Proposed |
+| [0018](#adr-0018) | Analyst-led concierge model; 19 screens for v1                     | Proposed |
+| [0019](#adr-0019) | Critical-risk override restricted to ORG_ADMIN and above           | Proposed |
 | [0020](#adr-0020) | Platform-admin cross-org access requires a time-boxed SupportGrant | Proposed |
 
 ---
 
 <a id="adr-0001"></a>
+
 ## ADR-0001 — Full-stack Next.js instead of Next.js + FastAPI
 
 **Context.** The operating system (§7) defaults to a monorepo with `apps/web` (Next.js) and `apps/api` (FastAPI), permitting deviation where audit shows another approach is materially better. The repository is empty, so there is no existing code to preserve. The team is one founder, pre-revenue and pre-incorporation.
@@ -38,6 +39,7 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 **Decision.** Build one Next.js application. No FastAPI service. No `apps/api`, no `apps/worker`.
 
 **Rationale.**
+
 1. Two runtimes double the authorization surface, and tenant isolation is the project's hardest gate. A split forces a service-to-service auth scheme — signing, key distribution, audience validation, rotation — to be built and secured before any product value exists.
 2. Auth.js, the document's preferred auth, is Next.js-native. Pairing it with FastAPI means either two implementations of session verification (how isolation bugs are born) or proxying everything through Next.js, which reduces FastAPI to a remote database client.
 3. Removing the second service removes one host, one secret set, one CI job, one health check, one migration runner, and one rollback path — most of the Phase 14 workload.
@@ -46,15 +48,17 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 6. §6 forbids a large microservice architecture. Two services for one engineer is where that begins.
 
 **Consequences.**
-- *Positive:* one language, one toolchain, one deployment; server-side authorization in one place; fastest path to the golden workflow.
-- *Negative:* Python's data/ML ecosystem is not directly available; long-running compute is constrained by the Node/serverless host.
-- *Mitigation (binding):* all decision logic — economics, scoring, confidence, risk — lives in `packages/core` as pure, framework-free, I/O-free TypeScript. Extracting a service later is re-exposing an already-isolated module behind HTTP, not a rewrite. This caps the cost of being wrong.
+
+- _Positive:_ one language, one toolchain, one deployment; server-side authorization in one place; fastest path to the golden workflow.
+- _Negative:_ Python's data/ML ecosystem is not directly available; long-running compute is constrained by the Node/serverless host.
+- _Mitigation (binding):_ all decision logic — economics, scoring, confidence, risk — lives in `packages/core` as pure, framework-free, I/O-free TypeScript. Extracting a service later is re-exposing an already-isolated module behind HTTP, not a rewrite. This caps the cost of being wrong.
 
 **Revisit if:** a Python-first engineer is hired; the learning loop needs a genuine ML pipeline; or a single request path needs more than five minutes of compute.
 
 ---
 
 <a id="adr-0002"></a>
+
 ## ADR-0002 — pnpm workspace monorepo with a single application
 
 **Context.** §7 specifies a monorepo with pnpm. ADR-0001 removes two of the three apps.
@@ -68,6 +72,7 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 ---
 
 <a id="adr-0003"></a>
+
 ## ADR-0003 — PostgreSQL with Prisma
 
 **Context.** §7 specifies PostgreSQL. The ORM was specified as SQLAlchemy 2 + Alembic, which ADR-0001 makes inapplicable. The domain is highly relational (~47 entities), migration-heavy, and financially precise.
@@ -83,11 +88,13 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 ---
 
 <a id="adr-0004"></a>
+
 ## ADR-0004 — Four-layer tenant isolation including Postgres RLS in Phase 1
 
 **Context.** §8 requires all protected reads and writes be scoped by `organization_id` and forbids relying on frontend filtering. §30 makes verified tenant isolation the gate before any product data is built. This is the single highest-severity risk in the system (S-1).
 
 **Decision.** Four mandatory layers, all delivered in Phase 1:
+
 1. Organization context derived from the URL path and verified against `Membership` server-side on every request. Never from a cookie, header, or body.
 2. A tenant-scoped data access layer as the only route to the database, with the raw client import-banned by lint and CI outside `packages/db/internal`.
 3. PostgreSQL Row-Level Security on every tenant-owned table, driven by a per-transaction session variable.
@@ -96,12 +103,14 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 **Rationale.** Layers 1 and 2 prevent the common bugs; layer 3 is the only one that still holds when application code is wrong; layer 4 is what turns "we believe it is isolated" into evidence. RLS is placed in Phase 1 rather than Phase 13 because it is cheap while every query path already carries org context and expensive once dozens of paths exist.
 
 **Consequences.**
-- *Cost, accepted deliberately:* every tenant request runs inside a transaction with a `SET LOCAL`; migrations and seed scripts run under a role that bypasses RLS; connection pooling must be configured so a pooled connection never leaks a session variable across requests (transaction-scoped `SET LOCAL`, not `SET`).
+
+- _Cost, accepted deliberately:_ every tenant request runs inside a transaction with a `SET LOCAL`; migrations and seed scripts run under a role that bypasses RLS; connection pooling must be configured so a pooled connection never leaks a session variable across requests (transaction-scoped `SET LOCAL`, not `SET`).
 - Returning **404 rather than 403** for cross-tenant access is deliberate: 403 confirms a resource exists, which is an information leak.
 
 ---
 
 <a id="adr-0005"></a>
+
 ## ADR-0005 — Auth.js v5 with database sessions and passwordless sign-in
 
 **Context.** §7 prefers Auth.js and states custom password authentication should not be implemented unless necessary.
@@ -115,6 +124,7 @@ All ADRs below are **`Proposed`** pending founder approval of Phase 0.
 ---
 
 <a id="adr-0006"></a>
+
 ## ADR-0006 — Decimal money handling in TypeScript
 
 **Context.** §12 requires Decimal and forbids binary floating point for financial calculations. ADR-0001 removes Python's `decimal.Decimal`.
@@ -130,6 +140,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0007"></a>
+
 ## ADR-0007 — Confidence removed from the composite opportunity score
 
 **Context.** §13 lists Confidence as a scoring factor with weight 5. §14 states confidence must be separate from opportunity attractiveness and that a high score with low confidence must not be presented as a strong Go. A factor inside a weighted composite cannot simultaneously be independent of it — this is a direct contradiction in the source document (C-1).
@@ -143,6 +154,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0008"></a>
+
 ## ADR-0008 — Decision is a deterministic ordered rule chain
 
 **Context.** §13's thresholds overlap. `Go: 75–100` and `Research More: 45–59 or low confidence` both match a score of 80 with low confidence. Precedence is undefined, so the same inputs could yield different decisions depending on evaluation order (C-2).
@@ -156,6 +168,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0009"></a>
+
 ## ADR-0009 — Provenance via DataSource + SourceCitation
 
 **Context.** §11 requires up to thirteen provenance attributes for every important metric, conclusion, and recommendation. §10 forbids JSON blobs for core domain entities. Applied literally, this means thirteen duplicated columns across a dozen tables (C-5).
@@ -169,6 +182,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0010"></a>
+
 ## ADR-0010 — One reporting currency per project; manual FX rates
 
 **Context.** §12 requires currency handling and §10 lists a `CurrencyRateSnapshot` entity. Supplier quotes genuinely arrive in multiple currencies while the sale happens in USD or EUR.
@@ -182,6 +196,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0011"></a>
+
 ## ADR-0011 — Role is an enum, not a table
 
 **Context.** §9 defines exactly four roles. §10 lists `Role` as an entity, implying user-defined roles (C-8).
@@ -195,6 +210,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0012"></a>
+
 ## ADR-0012 — One AuditLog; product analytics off-database
 
 **Context.** §10 lists both `AuditLog` and `ActivityEvent` with no stated boundary (C-6). §25 requires both audit logging and product event tracking.
@@ -208,6 +224,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0013"></a>
+
 ## ADR-0013 — Hosted Postgres branch for local development instead of Docker
 
 **Context.** §30 Phase 0 assumes Docker Compose for PostgreSQL. Audit found **Docker is not installed**, **PostgreSQL is not installed**, and the machine has **5.3 GB free disk** (blockers B-1, B-2). Docker Desktop alone needs several gigabytes.
@@ -221,6 +238,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0014"></a>
+
 ## ADR-0014 — No Redis; pg-boss on Postgres if async becomes necessary
 
 **Context.** §7 forbids Redis in Phase 1 and permits a lightweight job system only when PDF generation or AI tasks need durable async execution. Both are long-running (C-10).
@@ -234,6 +252,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0015"></a>
+
 ## ADR-0015 — PDF via headless Chromium rendering the report HTML
 
 **Context.** §18 requires both a web preview and a PDF export of a twenty-section report, with drafts watermarked. Divergence between preview and PDF would be a credibility failure in a product whose output is the deliverable.
@@ -247,6 +266,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0016"></a>
+
 ## ADR-0016 — Validation site in the same repo; leads are platform-owned
 
 **Context.** §19 requires a public validation website collecting personal data from US and EU prospects. §30 places it at Phase 11. The founder is pre-revenue and pre-incorporation, so this data is what validates everything else (C-11).
@@ -260,6 +280,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0017"></a>
+
 ## ADR-0017 — Channel readiness merged into the scoring phase
 
 **Context.** §13 gives Channel Readiness a 10-point scoring weight in Phase 5, but §30 does not build channel readiness until Phase 6. Phase 5 therefore cannot satisfy its own acceptance criterion that the total score be reproducible (C-3).
@@ -273,6 +294,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0018"></a>
+
 ## ADR-0018 — Analyst-led concierge model; 19 screens for v1
 
 **Context.** §4 describes a software-enabled service with a concierge SaaS MVP; §21 specifies 28 self-serve screens and §10 a ~60-entity model. These describe different products (C-4).
@@ -286,6 +308,7 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0019"></a>
+
 ## ADR-0019 — Critical-risk override restricted to ORG_ADMIN and above
 
 **Context.** §15 says a Critical risk blocks Go unless "an analyst explicitly overrides it," but §9 grants Analysts no override authority and does not name who may (C-7).
@@ -299,11 +322,12 @@ Enforced by: an ESLint rule forbidding arithmetic operators on money-typed value
 ---
 
 <a id="adr-0020"></a>
+
 ## ADR-0020 — Platform-admin cross-org access requires a time-boxed SupportGrant
 
 **Context.** §9 gives Founder/Platform Admin the ability to "access organizations for support." §5 lets any signed-in user create an organization. Together these give the platform a permanent cross-tenant read path into every customer's data (C-9, S-3).
 
-**Decision.** Platform admins have **no ambient cross-organization access**. Access requires a `SupportGrant` row naming the organization, a reason, the granting actor, and an expiry of at most 24 hours. Every request served under a grant is audit-logged with the grant id and is visible in the *target organization's* audit log. Organization creation is rate-limited per user and audit-logged.
+**Decision.** Platform admins have **no ambient cross-organization access**. Access requires a `SupportGrant` row naming the organization, a reason, the granting actor, and an expiry of at most 24 hours. Every request served under a grant is audit-logged with the grant id and is visible in the _target organization's_ audit log. Organization creation is rate-limited per user and audit-logged.
 
 **Rationale.** "Support access" is how multi-tenant products leak customer data, because it is usually implemented as a boolean that bypasses every check and is never reviewed. Making it an explicit, expiring, reasoned, and customer-visible record means the strongest privilege in the system leaves evidence and cannot be exercised silently. It also keeps the tenant DAL honest: the grant supplies an `organizationId` to the normal scoped path rather than introducing a bypass path.
 

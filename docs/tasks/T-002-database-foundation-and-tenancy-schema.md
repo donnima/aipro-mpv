@@ -1,15 +1,19 @@
 # T-002 — Database Foundation and Tenancy Schema
 
 ## Task ID
+
 `T-002` · Phase 1 · Depends on **T-001 approved** · Blocked until the founder supplies `DATABASE_URL`
 
 ## Objective
+
 Stand up PostgreSQL with Prisma, implement the complete Phase 1 schema from `DATA_MODEL.md` §4, enable Row-Level Security on every tenant-owned table, and prove RLS actually blocks cross-tenant reads at the database level. No application features, no auth, no UI.
 
 ## Business Reason
+
 Tenant isolation is the hard gate for the entire project — `MVP_SCOPE.md` and the operating system both forbid building product data before it is verified. The database is the last line of defence (risk S-1). Building RLS now, while there are eight tables and zero query paths, is cheap; retrofitting it after Phase 3 means auditing every query that already exists. This task creates the foundation the next three tasks build on and must not be rushed.
 
 ## Files or Areas Expected
+
 ```
 packages/db/
   prisma/schema.prisma
@@ -25,6 +29,7 @@ docs/DEVELOPMENT.md                database setup section
 ```
 
 ## Functional Requirements
+
 1. Prisma 6 in `packages/db` against PostgreSQL 16. Local development uses a Neon development branch — **no Docker, no local Postgres** (ADR-0013).
 2. Implement exactly the eleven Phase 1 tables in `DATA_MODEL.md` §4: `users`, `accounts`, `sessions`, `verification_tokens`, `organizations`, `memberships`, `invitations`, `support_grants`, `audit_logs`. Do not create any Phase 2+ table.
 3. UUID v7 primary keys. All `DATA_MODEL.md` §1 conventions applied.
@@ -37,6 +42,7 @@ docs/DEVELOPMENT.md                database setup section
 10. Extend `/api/health` to report database connectivity and the applied migration count. It must **not** leak the connection string, host, or schema details.
 
 ## Technical Constraints
+
 - Forward-only migrations. Every migration checked in and named after this task.
 - No application code outside `packages/db` may import `PrismaClient`. Enforce with an ESLint `no-restricted-imports` rule; CI fails on violation.
 - `packages/core` must not depend on `packages/db` — the ADR-0001 boundary holds.
@@ -44,6 +50,7 @@ docs/DEVELOPMENT.md                database setup section
 - Money columns are `numeric(18,6)` wherever they appear later — no money columns in this task, but do not introduce `float` anywhere.
 
 ## Security Requirements
+
 - `DATABASE_URL` comes from the environment only. Never committed, never logged, never in an error message returned to a client.
 - `audit_logs`: no `UPDATE` or `DELETE` in the schema, the DAL, or the application role's grants. Verify the grant with `information_schema.role_table_grants` (risk S-13).
 - `invitations.token_hash` stores a SHA-256 hash. There must be no column capable of holding a plaintext token (S-5).
@@ -51,7 +58,9 @@ docs/DEVELOPMENT.md                database setup section
 - The health endpoint returns a boolean, not diagnostics (S-20).
 
 ## Tests Required
+
 Integration tests against a real Postgres (CI service container):
+
 1. Migrations apply cleanly to an empty database, and re-applying is a no-op.
 2. Seed is idempotent — running twice produces the same row counts.
 3. **RLS blocks cross-tenant reads.** With `app.current_organization_id` set to Org A, a `SELECT *` on `memberships` returns only Org A's rows. This must be tested at the SQL level, bypassing the ORM entirely.
@@ -63,12 +72,14 @@ Integration tests against a real Postgres (CI service container):
 Test 5 is the one that catches the most dangerous real-world bug in this design. Do not skip it.
 
 ## Documentation Required
+
 - `DATA_MODEL.md`: mark Phase 1 tables as implemented; record any deviation and why.
 - `docs/DEVELOPMENT.md`: Neon setup, obtaining a branch URL, migration commands, the two database roles.
 - `DECISIONS.md`: append an ADR only if you deviate from ADR-0004 or ADR-0013.
 - `KNOWN_LIMITATIONS.md`: update.
 
 ## Definition of Done
+
 - [ ] Migrations apply to a clean database
 - [ ] Schema matches `DATA_MODEL.md` §4 exactly, or deviations are documented and justified
 - [ ] RLS enabled and verified on all four tenant tables
@@ -78,11 +89,13 @@ Test 5 is the one that catches the most dangerous real-world bug in this design.
 - [ ] CI green with the Postgres service container
 
 ## Commands to Run
+
 ```bash
 pnpm --filter @aipro/db prisma migrate deploy && pnpm --filter @aipro/db prisma db seed && pnpm test && pnpm lint && pnpm typecheck && pnpm build
 ```
 
 ## Expected Evidence
+
 1. Full unedited output of the command above.
 2. `\d+ memberships` and `\d+ audit_logs` from `psql` showing columns, indexes, and constraints.
 3. `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname='public'` — proving RLS is on.

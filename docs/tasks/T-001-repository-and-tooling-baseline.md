@@ -1,15 +1,19 @@
 # T-001 — Repository and Tooling Baseline
 
 ## Task ID
+
 `T-001` · Phase 0 · **Blocked until founder clears B-1, B-3, B-5** (see `ARCHITECTURE.md` §1.4)
 
 ## Objective
+
 Turn an empty directory into a working, committed, CI-verified pnpm monorepo running a Next.js 15 application with strict TypeScript, linting, formatting, and a green pipeline. No product features. No database yet.
 
 ## Business Reason
+
 Every later phase depends on a repository where lint, typecheck, test, and build actually run and actually fail when something is wrong. Establishing the quality gates before any product code exists is the cheapest point to do it — after Phase 1 they have to be retrofitted around working code. This task also creates the `.gitignore` and secret scanning that must exist **before** the first real credential enters the project (risk S-4).
 
 ## Files or Areas Expected
+
 ```
 .gitignore  .gitattributes  .editorconfig  .nvmrc  README.md  LICENSE
 package.json  pnpm-workspace.yaml  tsconfig.base.json
@@ -23,6 +27,7 @@ docs/  infra/deployment/
 ```
 
 ## Functional Requirements
+
 1. **Adopt the existing repository — do not re-initialize.** A `.git` directory already exists with **zero commits**, on branch **`master`**, with the working tree auto-staged and no `.gitignore` (blocker B-7). In order:
    a. Write `.gitignore` **before anything is committed**.
    b. `git reset` to unstage, then verify `git status` shows no local-only file (`.claude/settings.local.json` must be ignored, not committed).
@@ -42,6 +47,7 @@ docs/  infra/deployment/
 12. `packages/core` created with an ESLint boundary rule forbidding imports of `next`, `react`, `@prisma/client`, and any node built-in — ADR-0001's mitigation, enforced from the first commit.
 
 ## Technical Constraints
+
 - TypeScript `strict: true`, plus `noUncheckedIndexedAccess`, `noImplicitOverride`, `exactOptionalPropertyTypes`.
 - Node 22. pnpm only — do not create `package-lock.json` or `yarn.lock`.
 - No database, no auth, no Prisma in this task.
@@ -49,6 +55,7 @@ docs/  infra/deployment/
 - Dependencies limited to what the requirements above name. Adding anything else requires justification in the summary.
 
 ## Security Requirements
+
 - `.gitignore` covers `.env*` (except `.env.example`), `node_modules`, `.next`, build output, `*.pem`, and `.claude/settings.local.json`.
 - **`.gitignore` is written and verified before the first commit.** Verify with `git status --short` that no local-only or environment file is staged. A secret committed in the initial commit is in history permanently (S-4).
 - `gitleaks` runs in CI and fails the build on a finding.
@@ -57,18 +64,21 @@ docs/  infra/deployment/
 - Security headers configured in `next.config.ts`: CSP (report-only initially), HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`.
 
 ## Tests Required
+
 - Vitest configured at the root and runnable via `pnpm test`.
 - One test in `packages/core` proving the test runner works and covers workspace packages.
 - One integration test asserting `GET /api/health` returns 200 and the expected shape.
 - Playwright installed and configured, **but browser download is not part of this task** (blocker B-1). The E2E script must exist and be documented as CI-only until disk is resolved.
 
 ## Documentation Required
+
 - `README.md` as specified.
 - `docs/DEVELOPMENT.md`: local setup on Windows, the pnpm/corepack step, and the known environment blockers.
 - `CHANGELOG.md` with a Phase 0 entry.
 - `KNOWN_LIMITATIONS.md` recording: Playwright browsers not installed locally; no database yet; CSP in report-only mode.
 
 ## Definition of Done
+
 - [ ] `pnpm install` completes on this machine
 - [ ] `pnpm dev` serves the home page and `/api/health` returns 200
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm test`, `pnpm build` all pass
@@ -79,11 +89,13 @@ docs/  infra/deployment/
 - [ ] Documentation files above exist
 
 ## Commands to Run
+
 ```bash
 pnpm install && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
 ## Expected Evidence
+
 1. Full terminal output of the command above, unedited, including timings.
 2. `git log --oneline` and `git status`.
 3. Output of `pnpm why next` confirming a single Next.js version.

@@ -34,27 +34,27 @@ Binding rules for every table.
 
 The operating system §10 lists roughly 60 entities. That is a schema for a mature product; it contradicts §2's "narrowest coherent system." The MVP model is **47 domain tables plus 3 Auth.js tables**. Twelve entities are deferred or collapsed with a stated reason.
 
-| §10 entity | Disposition | Reason |
-|---|---|---|
-| `Workspace` | **Deferred** | A second tenancy level under Organization is undefined in the source document and would double every authorization check (`MVP_SCOPE.md` §4.2) |
-| `Role` | **Collapsed to enum** | Four fixed roles; a table implies custom roles (ADR-0011) |
-| `ProjectStatus` | **Collapsed to enum** | Closed set with validated transitions |
-| `ProductCategory` | **Collapsed to a field** | A taxonomy table has no MVP consumer; category is a string plus optional HS code |
-| `SupplierEvaluation` | **Collapsed into `suppliers`** | Evaluation is a handful of scored fields on the supplier, not a separate lifecycle |
-| `CurrencyRateSnapshot` | **Deferred** | Rates entered manually and stored on the record with a rate date (ADR-0010) |
-| `FinancialAssumption` | **Collapsed** | Assumptions are captured as `cost_line_items.basis` + `cost_scenarios.assumption_notes` + citations |
-| `ConfidenceAssessment` | **Collapsed into `opportunity_assessments`** | One confidence result per assessment; the component breakdown is a JSONB column (justified in §7) |
-| `PredictionComparison` | **Computed, not stored** | Derivable from the immutable `report_versions` snapshot plus `actual_outcomes`; storing it would create a third copy that can drift |
-| `ActivityEvent` | **Removed** | Merged into `audit_logs`; product analytics go to PostHog (ADR-0012) |
-| `FeatureFlag` | **Deferred** | Environment configuration is sufficient with one deployment and no tiers |
-| `AIReviewStatus` | **Collapsed to enum** | A status column on each AI-drafted artifact |
+| §10 entity             | Disposition                                  | Reason                                                                                                                                         |
+| ---------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Workspace`            | **Deferred**                                 | A second tenancy level under Organization is undefined in the source document and would double every authorization check (`MVP_SCOPE.md` §4.2) |
+| `Role`                 | **Collapsed to enum**                        | Four fixed roles; a table implies custom roles (ADR-0011)                                                                                      |
+| `ProjectStatus`        | **Collapsed to enum**                        | Closed set with validated transitions                                                                                                          |
+| `ProductCategory`      | **Collapsed to a field**                     | A taxonomy table has no MVP consumer; category is a string plus optional HS code                                                               |
+| `SupplierEvaluation`   | **Collapsed into `suppliers`**               | Evaluation is a handful of scored fields on the supplier, not a separate lifecycle                                                             |
+| `CurrencyRateSnapshot` | **Deferred**                                 | Rates entered manually and stored on the record with a rate date (ADR-0010)                                                                    |
+| `FinancialAssumption`  | **Collapsed**                                | Assumptions are captured as `cost_line_items.basis` + `cost_scenarios.assumption_notes` + citations                                            |
+| `ConfidenceAssessment` | **Collapsed into `opportunity_assessments`** | One confidence result per assessment; the component breakdown is a JSONB column (justified in §7)                                              |
+| `PredictionComparison` | **Computed, not stored**                     | Derivable from the immutable `report_versions` snapshot plus `actual_outcomes`; storing it would create a third copy that can drift            |
+| `ActivityEvent`        | **Removed**                                  | Merged into `audit_logs`; product analytics go to PostHog (ADR-0012)                                                                           |
+| `FeatureFlag`          | **Deferred**                                 | Environment configuration is sufficient with one deployment and no tiers                                                                       |
+| `AIReviewStatus`       | **Collapsed to enum**                        | A status column on each AI-drafted artifact                                                                                                    |
 
 Two entities are **added** because the source model does not cover requirements it states elsewhere:
 
-| Added | Reason |
-|---|---|
-| `source_citations` | Makes §11's provenance contract enforceable without duplicating 13 columns or using JSONB (ADR-0009) |
-| `support_grants` | Makes §9's platform-admin cross-org access explicit, expiring, and auditable rather than ambient (ADR-0020) |
+| Added              | Reason                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `source_citations` | Makes §11's provenance contract enforceable without duplicating 13 columns or using JSONB (ADR-0009)        |
+| `support_grants`   | Makes §9's platform-admin cross-org access explicit, expiring, and auditable rather than ambient (ADR-0020) |
 
 ---
 
@@ -90,44 +90,48 @@ LeadInterest          PAID_PILOT | EARLY_ACCESS | INFORMATION_ONLY
 
 This is the complete schema for the Phase 1 gate. Eight domain tables plus three Auth.js tables. Nothing else is built until the isolation suite passes.
 
-### `users` — *not tenant-owned*
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `email` | citext unique not null | |
-| `email_verified` | timestamptz | Auth.js |
-| `name` | text | |
-| `image_url` | text | |
-| `is_platform_admin` | boolean not null default false | Grants no data access on its own — see `support_grants` |
-| `anonymized_at` | timestamptz | GDPR erasure: PII cleared, row retained for audit integrity |
-| `created_at` / `updated_at` | timestamptz | |
+### `users` — _not tenant-owned_
+
+| Column                      | Type                           | Notes                                                       |
+| --------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| `id`                        | uuid pk                        |                                                             |
+| `email`                     | citext unique not null         |                                                             |
+| `email_verified`            | timestamptz                    | Auth.js                                                     |
+| `name`                      | text                           |                                                             |
+| `image_url`                 | text                           |                                                             |
+| `is_platform_admin`         | boolean not null default false | Grants no data access on its own — see `support_grants`     |
+| `anonymized_at`             | timestamptz                    | GDPR erasure: PII cleared, row retained for audit integrity |
+| `created_at` / `updated_at` | timestamptz                    |                                                             |
 
 A user may belong to many organizations. `is_platform_admin` is deliberately **not** a data-access grant (ADR-0020).
 
 ### `accounts`, `sessions`, `verification_tokens`
+
 Auth.js standard tables via the Prisma adapter. Database sessions, not JWT (ADR-0005). Not tenant-owned.
 
-### `organizations` — *tenancy root*
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `name` | text not null | |
-| `slug` | citext unique not null | Used in `/orgs/[orgSlug]/…`; the org context source (S-2) |
-| `country` | char(2) | |
-| `reporting_currency` | char(3) not null default `'USD'` | Default for new projects |
-| `ai_daily_token_budget` | integer not null default 200000 | Enforced pre-dispatch (S-8) |
-| `archived_at` | timestamptz | |
-| `created_by` | uuid → users | |
-| `created_at` / `updated_at` | timestamptz | |
+### `organizations` — _tenancy root_
 
-### `memberships` — *the authorization root*
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `organization_id` | uuid not null → organizations | |
-| `user_id` | uuid not null → users | |
-| `role` | Role not null | |
-| `created_at` / `updated_at` | timestamptz | |
+| Column                      | Type                             | Notes                                                     |
+| --------------------------- | -------------------------------- | --------------------------------------------------------- |
+| `id`                        | uuid pk                          |                                                           |
+| `name`                      | text not null                    |                                                           |
+| `slug`                      | citext unique not null           | Used in `/orgs/[orgSlug]/…`; the org context source (S-2) |
+| `country`                   | char(2)                          |                                                           |
+| `reporting_currency`        | char(3) not null default `'USD'` | Default for new projects                                  |
+| `ai_daily_token_budget`     | integer not null default 200000  | Enforced pre-dispatch (S-8)                               |
+| `archived_at`               | timestamptz                      |                                                           |
+| `created_by`                | uuid → users                     |                                                           |
+| `created_at` / `updated_at` | timestamptz                      |                                                           |
+
+### `memberships` — _the authorization root_
+
+| Column                      | Type                          | Notes |
+| --------------------------- | ----------------------------- | ----- |
+| `id`                        | uuid pk                       |       |
+| `organization_id`           | uuid not null → organizations |       |
+| `user_id`                   | uuid not null → users         |       |
+| `role`                      | Role not null                 |       |
+| `created_at` / `updated_at` | timestamptz                   |       |
 
 `unique (organization_id, user_id)` · index on `(user_id)`.
 
@@ -136,49 +140,52 @@ Auth.js standard tables via the Prisma adapter. Database sessions, not JWT (ADR-
 **Invariant:** an organization must always retain at least one `ORG_ADMIN`. Removing or demoting the last admin is rejected (S-6).
 
 ### `invitations`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `organization_id` | uuid not null → organizations | |
-| `email` | citext not null | Acceptance requires the authenticated email to match |
-| `role` | Role not null | Cannot be `PLATFORM_ADMIN` |
-| `token_hash` | text not null unique | SHA-256 of a 256-bit random token. **Plaintext is emailed, never stored** |
-| `status` | InvitationStatus not null default `PENDING` | |
-| `expires_at` | timestamptz not null | 7 days |
-| `accepted_at` | timestamptz | Single use |
-| `invited_by` | uuid not null → users | |
-| `created_at` / `updated_at` | timestamptz | |
+
+| Column                      | Type                                        | Notes                                                                     |
+| --------------------------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| `id`                        | uuid pk                                     |                                                                           |
+| `organization_id`           | uuid not null → organizations               |                                                                           |
+| `email`                     | citext not null                             | Acceptance requires the authenticated email to match                      |
+| `role`                      | Role not null                               | Cannot be `PLATFORM_ADMIN`                                                |
+| `token_hash`                | text not null unique                        | SHA-256 of a 256-bit random token. **Plaintext is emailed, never stored** |
+| `status`                    | InvitationStatus not null default `PENDING` |                                                                           |
+| `expires_at`                | timestamptz not null                        | 7 days                                                                    |
+| `accepted_at`               | timestamptz                                 | Single use                                                                |
+| `invited_by`                | uuid not null → users                       |                                                                           |
+| `created_at` / `updated_at` | timestamptz                                 |                                                                           |
 
 Covers S-5 and S-6: hashed at rest, single use, expiring, email-bound, and unable to grant platform admin.
 
-### `support_grants` — *not tenant-owned* (ADR-0020)
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `organization_id` | uuid not null → organizations | Target |
-| `granted_to_user_id` | uuid not null → users | Must be a platform admin |
-| `reason` | text not null | |
-| `expires_at` | timestamptz not null | **Max 24 hours**, enforced in the service layer |
-| `revoked_at` | timestamptz | |
-| `created_by` | uuid not null → users | |
-| `created_at` | timestamptz | |
+### `support_grants` — _not tenant-owned_ (ADR-0020)
 
-The only route to cross-organization data. An active grant supplies an `organizationId` to the *normal* scoped path — it is not a bypass. Every request under a grant writes an audit entry carrying `support_grant_id`, visible in the target organization's own audit log.
+| Column               | Type                          | Notes                                           |
+| -------------------- | ----------------------------- | ----------------------------------------------- |
+| `id`                 | uuid pk                       |                                                 |
+| `organization_id`    | uuid not null → organizations | Target                                          |
+| `granted_to_user_id` | uuid not null → users         | Must be a platform admin                        |
+| `reason`             | text not null                 |                                                 |
+| `expires_at`         | timestamptz not null          | **Max 24 hours**, enforced in the service layer |
+| `revoked_at`         | timestamptz                   |                                                 |
+| `created_by`         | uuid not null → users         |                                                 |
+| `created_at`         | timestamptz                   |                                                 |
+
+The only route to cross-organization data. An active grant supplies an `organizationId` to the _normal_ scoped path — it is not a bypass. Every request under a grant writes an audit entry carrying `support_grant_id`, visible in the target organization's own audit log.
 
 ### `audit_logs` — append-only (ADR-0012)
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid pk | |
-| `organization_id` | uuid → organizations | Null for platform-level actions |
-| `actor_user_id` | uuid → users | Null for system actions |
-| `action` | text not null | e.g. `project.status_changed`, `risk.overridden` |
-| `target_type` / `target_id` | text / uuid | |
-| `summary` | text not null | Human-readable |
-| `changes` | jsonb | **Justified JSONB:** before/after shape varies by entity; queried by key, never filtered on |
-| `ip_address` | inet · `user_agent` text | |
-| `correlation_id` | uuid not null | Ties to structured logs and Sentry |
-| `support_grant_id` | uuid → support_grants | Present when acting under a grant |
-| `created_at` | timestamptz | |
+
+| Column                      | Type                     | Notes                                                                                       |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------------------------------- |
+| `id`                        | uuid pk                  |                                                                                             |
+| `organization_id`           | uuid → organizations     | Null for platform-level actions                                                             |
+| `actor_user_id`             | uuid → users             | Null for system actions                                                                     |
+| `action`                    | text not null            | e.g. `project.status_changed`, `risk.overridden`                                            |
+| `target_type` / `target_id` | text / uuid              |                                                                                             |
+| `summary`                   | text not null            | Human-readable                                                                              |
+| `changes`                   | jsonb                    | **Justified JSONB:** before/after shape varies by entity; queried by key, never filtered on |
+| `ip_address`                | inet · `user_agent` text |                                                                                             |
+| `correlation_id`            | uuid not null            | Ties to structured logs and Sentry                                                          |
+| `support_grant_id`          | uuid → support_grants    | Present when acting under a grant                                                           |
+| `created_at`                | timestamptz              |                                                                                             |
 
 Index `(organization_id, created_at desc)`.
 
@@ -201,28 +208,30 @@ Index `(organization_id, created_at desc)`.
 ## 6. Phase 3 — Evidence and Provenance
 
 ### `data_sources` — the §11 provenance contract, stored once (ADR-0009)
-| Column | Type |
-|---|---|
-| `id` · `organization_id` | uuid |
-| `product_project_id` | uuid, nullable — null means org-level reusable source |
-| `name` | text not null |
-| `source_type` | SourceType not null |
-| `url` | text |
-| `reference` | text — citation for non-URL sources |
-| `source_date` | date not null — when the source's data was produced |
-| `ingested_at` | timestamptz not null |
-| `country_code` | char(2) |
-| `channel` | SalesChannel, nullable |
-| `currency` | char(3), nullable |
-| `data_quality` | DataQuality not null — actual vs estimated |
-| `confidence_score` | numeric(6,3) — 0–100 |
-| `analyst_note` | text |
-| `attachment_id` | uuid → attachments, nullable |
-| audit columns | |
+
+| Column                   | Type                                                  |
+| ------------------------ | ----------------------------------------------------- |
+| `id` · `organization_id` | uuid                                                  |
+| `product_project_id`     | uuid, nullable — null means org-level reusable source |
+| `name`                   | text not null                                         |
+| `source_type`            | SourceType not null                                   |
+| `url`                    | text                                                  |
+| `reference`              | text — citation for non-URL sources                   |
+| `source_date`            | date not null — when the source's data was produced   |
+| `ingested_at`            | timestamptz not null                                  |
+| `country_code`           | char(2)                                               |
+| `channel`                | SalesChannel, nullable                                |
+| `currency`               | char(3), nullable                                     |
+| `data_quality`           | DataQuality not null — actual vs estimated            |
+| `confidence_score`       | numeric(6,3) — 0–100                                  |
+| `analyst_note`           | text                                                  |
+| `attachment_id`          | uuid → attachments, nullable                          |
+| audit columns            |                                                       |
 
 All thirteen §11 attributes are present. `rule_version` and `model_version` attach at the point of use (`opportunity_factor_scores`, `ai_execution_logs`) rather than to the source, because they describe the derivation, not the evidence.
 
 ### `source_citations` — polymorphic link
+
 `id`, `organization_id`, `data_source_id` → data_sources, `citable_type` (text), `citable_id` (uuid), `note`, `created_by`, `created_at`.
 
 Index `(organization_id, citable_type, citable_id)`. Unique `(data_source_id, citable_type, citable_id)`.
@@ -239,7 +248,7 @@ Referential integrity on this edge is enforced in the application layer, not by 
 
 **`suppliers`** — `organization_id`, `product_project_id`, `name`, `country_code`, `contact_name`, `contact_email`, `website`, plus collapsed evaluation fields: `capability_score`, `communication_score`, `compliance_score`, `financial_stability_score` (each numeric(6,3), nullable), `certifications` (text), `evaluation_note`. Audit columns.
 
-**`supplier_quotes`** — `supplier_id`, `organization_id`, `quoted_at` date, `unit_price` numeric(18,6), `currency`, `fx_rate_to_reporting` numeric(18,8), `fx_rate_date` date *(ADR-0010)*, `moq` integer, `lead_time_days` integer, `incoterm` text, `tooling_cost`, `sample_cost`, `payment_terms`, `validity_until` date, `notes`. Audit columns.
+**`supplier_quotes`** — `supplier_id`, `organization_id`, `quoted_at` date, `unit_price` numeric(18,6), `currency`, `fx_rate_to_reporting` numeric(18,8), `fx_rate_date` date _(ADR-0010)_, `moq` integer, `lead_time_days` integer, `incoterm` text, `tooling_cost`, `sample_cost`, `payment_terms`, `validity_until` date, `notes`. Audit columns.
 
 **`attachments`** — `organization_id`, `product_project_id` (nullable), `storage_key` (text — **generated, never the user's filename**), `original_filename`, `mime_type`, `size_bytes`, `checksum_sha256`, `uploaded_by`, `av_scan_status` (text default `'PENDING'` — adapter placeholder per §23), `created_at`.
 
@@ -261,19 +270,19 @@ Storage keys are prefixed `org/{organization_id}/…` so an object key alone can
 
 **Reproducibility invariant:** given a scenario's line items and a `calculation_version`, recalculation reproduces the stored result exactly. This is a Phase 4 test, not an aspiration.
 
-**`opportunity_factor_definitions`** — `organization_id` (nullable — null = platform default), `key`, `label`, `weight` numeric(6,3), `normalization_spec` jsonb *(justified: the input→0–100 mapping differs per factor and is configuration, not queried)*, `rule_version` not null, `is_active`, `sort_order`. Seeded with the ten weights in `ARCHITECTURE.md` §7.1 — Confidence is **not** among them (ADR-0007).
+**`opportunity_factor_definitions`** — `organization_id` (nullable — null = platform default), `key`, `label`, `weight` numeric(6,3), `normalization_spec` jsonb _(justified: the input→0–100 mapping differs per factor and is configuration, not queried)_, `rule_version` not null, `is_active`, `sort_order`. Seeded with the ten weights in `ARCHITECTURE.md` §7.1 — Confidence is **not** among them (ADR-0007).
 
 **`decision_thresholds`** — `organization_id` (nullable), `rule_version`, `rule_key` (e.g. `go_min_score`, `test_min_score`, `min_required_inputs_pct`), `numeric_value`, `is_active`. Every threshold in the ADR-0008 chain lives here, never as a literal.
 
-**`opportunity_assessments`** — `organization_id`, `product_project_id`, `cost_scenario_id`, `total_score` numeric(6,3), `confidence_score` numeric(6,3), `confidence_band` (ConfidenceBand), `confidence_components` jsonb *(justified: derived, versioned explainability output)*, `decision` (Decision), `decision_rule_id` text not null — **which of the nine ordered rules fired** (ADR-0008), `required_inputs_pct` numeric(6,3), `rule_version` not null, `calculation_version` not null, `review_status` (ReviewStatus), `calculated_at`, audit columns.
+**`opportunity_assessments`** — `organization_id`, `product_project_id`, `cost_scenario_id`, `total_score` numeric(6,3), `confidence_score` numeric(6,3), `confidence_band` (ConfidenceBand), `confidence_components` jsonb _(justified: derived, versioned explainability output)_, `decision` (Decision), `decision_rule_id` text not null — **which of the nine ordered rules fired** (ADR-0008), `required_inputs_pct` numeric(6,3), `rule_version` not null, `calculation_version` not null, `review_status` (ReviewStatus), `calculated_at`, audit columns.
 
 Score and confidence are **separate columns**, computed by separate engines. This is what makes ADR-0007 structural rather than a UI convention.
 
-**`opportunity_factor_scores`** — `opportunity_assessment_id`, `organization_id`, `factor_key`, `raw_inputs` jsonb *(justified: input shape varies per factor)*, `normalized_score` numeric(6,3), `weight` numeric(6,3), `weighted_contribution` numeric(6,3), `rationale` text, `confidence_score` numeric(6,3), `rule_version`, `analyst_override_score` numeric(6,3) nullable, `override_reason` text, `overridden_by`, `overridden_at`.
+**`opportunity_factor_scores`** — `opportunity_assessment_id`, `organization_id`, `factor_key`, `raw_inputs` jsonb _(justified: input shape varies per factor)_, `normalized_score` numeric(6,3), `weight` numeric(6,3), `weighted_contribution` numeric(6,3), `rationale` text, `confidence_score` numeric(6,3), `rule_version`, `analyst_override_score` numeric(6,3) nullable, `override_reason` text, `overridden_by`, `overridden_at`.
 
 Carries every attribute §13 requires. Source references attach via `source_citations`.
 
-**`risk_rules`** — `organization_id` (nullable), `key`, `category`, `label`, `severity` (RiskSeverity), `condition_spec` jsonb *(justified: declarative rule configuration)*, `rule_version`, `is_active`. Seeded across the 17 §15 categories.
+**`risk_rules`** — `organization_id` (nullable), `key`, `category`, `label`, `severity` (RiskSeverity), `condition_spec` jsonb _(justified: declarative rule configuration)_, `rule_version`, `is_active`. Seeded across the 17 §15 categories.
 
 **`risk_flags`** — `organization_id`, `product_project_id`, `opportunity_assessment_id` (nullable), `risk_rule_id`, `severity`, `status` (RiskStatus), `title`, `explanation`, `override_reason` text, `overridden_by` uuid, `overridden_at`, `resolved_by`, `resolved_at`, audit columns.
 
@@ -295,7 +304,7 @@ Feeds the Channel Readiness scoring factor and the risk engine — which is why 
 
 The system prompt is a constant here and never contains customer content (S-7).
 
-**`ai_execution_logs`** — `organization_id`, `product_project_id` (nullable), `provider` (AIProvider), `model` text, `prompt_template_id`, `prompt_version` integer, `input_payload_hash` char(64) — **SHA-256, not the payload**, `structured_output` jsonb *(justified: versioned AI structured output, explicitly permitted by §10)*, `raw_output` text nullable, `input_tokens`, `output_tokens`, `estimated_cost_usd` numeric(18,6), `duration_ms`, `status` (AIExecutionStatus), `error_message`, `fallback_provider` (AIProvider, nullable), `review_status` (ReviewStatus), `requested_by`, `created_at`.
+**`ai_execution_logs`** — `organization_id`, `product_project_id` (nullable), `provider` (AIProvider), `model` text, `prompt_template_id`, `prompt_version` integer, `input_payload_hash` char(64) — **SHA-256, not the payload**, `structured_output` jsonb _(justified: versioned AI structured output, explicitly permitted by §10)_, `raw_output` text nullable, `input_tokens`, `output_tokens`, `estimated_cost_usd` numeric(18,6), `duration_ms`, `status` (AIExecutionStatus), `error_message`, `fallback_provider` (AIProvider, nullable), `review_status` (ReviewStatus), `requested_by`, `created_at`.
 
 Storing the input as a hash rather than the payload satisfies §17's logging requirement without duplicating customer content into a second store (§25's "do not log full sensitive documents").
 
@@ -315,7 +324,7 @@ Storing the input as a hash rather than the payload satisfies §17's logging req
 
 **`reports`** — `organization_id`, `product_project_id`, `title`, `current_version_id`, audit columns.
 
-**`report_versions`** — `report_id`, `organization_id`, `version_number` integer, `review_status` (ReviewStatus), `rendered_html` text, `pdf_storage_key` text nullable, `input_snapshot` jsonb *(justified: an immutable point-in-time capture of every input — the mechanism that makes a historic report reproducible)*, `calculation_version`, `rule_version`, `approved_by`, `approved_at`, `created_by`, `created_at`.
+**`report_versions`** — `report_id`, `organization_id`, `version_number` integer, `review_status` (ReviewStatus), `rendered_html` text, `pdf_storage_key` text nullable, `input_snapshot` jsonb _(justified: an immutable point-in-time capture of every input — the mechanism that makes a historic report reproducible)_, `calculation_version`, `rule_version`, `approved_by`, `approved_at`, `created_by`, `created_at`.
 
 Unique `(report_id, version_number)`. **Immutable after creation.** This is what prevents an approved report silently changing when project data is edited later (S-19), and it is the estimate side of the estimate-vs-actual comparison.
 
@@ -333,29 +342,29 @@ Actuals are structurally separate from estimates — a different table, never me
 
 These three tables are deliberately outside the tenancy model (ADR-0016). A prospect is not a tenant. They are excluded from the tenant DAL and readable only by `PLATFORM_ADMIN`. **This exclusion list is a standing security-review item** — any future table without `organization_id` must be justified here.
 
-**`leads`** — `id`, `full_name`, `business_email` citext, `company`, `country_code`, `business_type`, `interest` (LeadInterest), `source` text, `utm` jsonb *(justified: arbitrary campaign metadata)*, `created_at`, `anonymized_at`.
+**`leads`** — `id`, `full_name`, `business_email` citext, `company`, `country_code`, `business_type`, `interest` (LeadInterest), `source` text, `utm` jsonb _(justified: arbitrary campaign metadata)_, `created_at`, `anonymized_at`.
 
 **`survey_responses`** — `lead_id`, plus the §19 fields: `product_or_category`, `target_market`, `target_channel`, `current_workflow`, `main_challenge`, `estimated_budget_band`, `decision_timeline`, `interested_in_paid_pilot` boolean, `created_at`.
 
 **`consent_records`** — `lead_id`, `policy_version` text not null, `consent_text_hash` char(64), `granted_at`, `ip_address` inet, `user_agent`, `withdrawn_at`.
 
-Storing the policy version and a hash of the exact consent text shown means the business can later prove *what* a person consented to, not merely that they did — which is the part of GDPR consent that record-keeping usually misses (S-12).
+Storing the policy version and a hash of the exact consent text shown means the business can later prove _what_ a person consented to, not merely that they did — which is the part of GDPR consent that record-keeping usually misses (S-12).
 
 ---
 
 ## 11. Entity Count
 
-| Group | Tables |
-|---|---:|
-| Identity, tenancy, governance (Phase 1) | 8 + 3 Auth.js |
-| Product projects (Phase 2) | 4 |
-| Evidence and provenance (Phase 3) | 8 |
-| Economics (Phase 4) | 3 |
-| Scoring, confidence, risk, readiness (Phase 5) | 10 |
-| AI, blueprints, review (Phases 6–7) | 9 |
-| Reporting and learning loop (Phases 8–9) | 6 |
-| Public validation (Track B) | 3 |
-| **Total** | **51 (48 domain + 3 Auth.js)** |
+| Group                                          |                         Tables |
+| ---------------------------------------------- | -----------------------------: |
+| Identity, tenancy, governance (Phase 1)        |                  8 + 3 Auth.js |
+| Product projects (Phase 2)                     |                              4 |
+| Evidence and provenance (Phase 3)              |                              8 |
+| Economics (Phase 4)                            |                              3 |
+| Scoring, confidence, risk, readiness (Phase 5) |                             10 |
+| AI, blueprints, review (Phases 6–7)            |                              9 |
+| Reporting and learning loop (Phases 8–9)       |                              6 |
+| Public validation (Track B)                    |                              3 |
+| **Total**                                      | **51 (48 domain + 3 Auth.js)** |
 
 Twelve §10 entities deferred or collapsed; two added. The reductions are recorded in §2 with reasons and are reversible — each deferred entity has a named revisit trigger in `MVP_SCOPE.md` §4.2.
 

@@ -1,17 +1,21 @@
 # T-005 — Tenant Isolation Gate
 
 ## Task ID
+
 `T-005` · Phase 1 · Depends on **T-004 approved** · **This task is the Phase 1 gate**
 
 ## Objective
+
 Build a reusable, adversarial tenant-isolation and authorization test harness that proves — not asserts — that Organization B cannot reach any of Organization A's data through any route, action, or file path. Fix whatever it finds. Then the gate opens.
 
 ## Business Reason
-The operating system is unambiguous: *"Do not build product projects until tenant isolation is verified."* T-004 implemented isolation; this task attempts to break it. The distinction matters — a developer testing their own design tends to test the paths they already thought about. This task exists to test the paths they did not.
+
+The operating system is unambiguous: _"Do not build product projects until tenant isolation is verified."_ T-004 implemented isolation; this task attempts to break it. The distinction matters — a developer testing their own design tends to test the paths they already thought about. This task exists to test the paths they did not.
 
 It also produces the harness that every later phase extends. When Phase 3 adds suppliers, adding a supplier to the fixture must automatically subject it to every isolation assertion. If that harness is designed well here, isolation stays proven for free through Phase 9. If it is designed as a one-off test file, isolation quietly degrades.
 
 ## Files or Areas Expected
+
 ```
 apps/web/test/isolation/
   harness.ts             the reusable, resource-driven engine
@@ -58,18 +62,22 @@ SECURITY.md              initial version
 14. **Fix every finding.** If the harness finds a gap, fix it in T-004's code and add the regression test. Report each finding, its root cause, and its fix — **a task that finds nothing at all should be treated as suspicious and the harness re-examined.**
 
 ## Technical Constraints
+
 - Tests run against a real PostgreSQL with RLS active. No mocked database, no stubbed authorization.
 - The harness must be data-driven from `resources.ts`, not a hand-written test per resource. Hand-written per-resource tests do not survive nine phases.
 - Do not weaken any authorization check to make a test pass. If a test fails, the code is wrong, not the test.
 - No Phase 2 features. This task adds tests and fixes, not product surface.
 
 ## Security Requirements
+
 - The harness must not depend on any test-only bypass, backdoor, or environment flag that could exist in production. It authenticates as real users through the real session mechanism.
 - Fixture data must be obviously synthetic (`Org A Test`, `analyst-a@example.test`) and must never resemble a real customer.
 - No credential in test files. Test credentials come from the environment or are generated per run.
 
 ## Tests Required
+
 The whole task is tests. Coverage must include, at minimum:
+
 - Every route under `/orgs/[orgSlug]` × Org B user → 404
 - Every Server Action × Org B user × Org A id → rejected
 - Every registered resource × six DAL operations → isolated
@@ -82,12 +90,14 @@ The whole task is tests. Coverage must include, at minimum:
 - A resource in the schema but missing from the registry → test fails
 
 ## Documentation Required
+
 - `TESTING.md`: the testing strategy, how the harness works, and **how to register a new resource — required reading for every later phase**.
 - `SECURITY.md`, initial version: the tenancy model, the four isolation layers, the role matrix, the support-grant policy, what is tested, and what is explicitly not yet covered.
 - `ARCHITECTURE.md`: record the Phase 1 gate result.
 - `CHANGELOG.md`, `KNOWN_LIMITATIONS.md`.
 
 ## Definition of Done
+
 - [ ] Every requirement above has passing tests
 - [ ] `pnpm test:isolation` passes and is a named CI job
 - [ ] Every finding is fixed with a regression test, and each is reported with its root cause
@@ -97,11 +107,13 @@ The whole task is tests. Coverage must include, at minimum:
 - [ ] CI green
 
 ## Commands to Run
+
 ```bash
 pnpm test:isolation && pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
 ## Expected Evidence
+
 1. Full unedited output of `pnpm test:isolation` with **every test name visible** — this output is the gate artifact and will be re-read at Phase 11 hardening.
 2. The resource registry quoted in full.
 3. For each finding: the failing output before the fix, the diff, and the passing output after.
@@ -111,4 +123,5 @@ pnpm test:isolation && pnpm lint && pnpm typecheck && pnpm test && pnpm build
 7. `git diff --stat`.
 
 ## Gate Decision
+
 On acceptance, Claude records the Phase 1 gate as **PASSED** in `ARCHITECTURE.md` and Phase 2 opens. Until then, **no product project code may be written.** If the harness cannot be completed, the gate stays closed — report that plainly rather than narrowing the harness to fit.

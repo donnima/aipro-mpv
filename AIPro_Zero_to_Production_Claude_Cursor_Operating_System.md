@@ -1,4 +1,5 @@
 # AIPro MVP — ZERO-TO-PRODUCTION DEVELOPMENT OPERATING SYSTEM
+
 ## Combined Claude Code + Cursor Execution Prompt
 
 > **Use this document as the master operating system for building the AIPro MVP from an empty repository to a deployable, testable, demo-ready product.**
@@ -311,9 +312,11 @@ Use Python dependency management with `uv` or Poetry. Prefer `uv` for speed and 
 Choose one implementation after repository audit:
 
 Preferred:
+
 - Auth.js with secure session handling
 
 Acceptable:
+
 - Clerk
 - Supabase Auth
 
@@ -608,19 +611,19 @@ Use configurable factor definitions.
 
 Initial weights:
 
-| Factor | Weight |
-|---|---:|
-| Demand | 15 |
-| Competition | 10 |
-| Margin | 15 |
-| Capital Requirement | 10 |
-| Sourcing Difficulty | 10 |
-| Compliance Risk | 10 |
-| Channel Readiness | 10 |
-| Advertising Risk | 5 |
-| Seasonality and Stability | 5 |
-| Expansion Potential | 5 |
-| Confidence | 5 |
+| Factor                    | Weight |
+| ------------------------- | -----: |
+| Demand                    |     15 |
+| Competition               |     10 |
+| Margin                    |     15 |
+| Capital Requirement       |     10 |
+| Sourcing Difficulty       |     10 |
+| Compliance Risk           |     10 |
+| Channel Readiness         |     10 |
+| Advertising Risk          |      5 |
+| Seasonality and Stability |      5 |
+| Expansion Potential       |      5 |
+| Confidence                |      5 |
 
 Total: 100.
 
@@ -1231,12 +1234,19 @@ Your responsibilities:
 For every review output, use:
 
 ## Review Scope
+
 ## What Was Inspected
+
 ## Findings
+
 ## Blocking Issues
+
 ## Non-Blocking Improvements
+
 ## Required Corrections
+
 ## Verification Commands
+
 ## Acceptance Decision
 
 Acceptance decisions:
@@ -1248,16 +1258,27 @@ Acceptance decisions:
 When producing a Cursor task, use:
 
 ## Task ID
+
 ## Objective
+
 ## Business Reason
+
 ## Files or Areas Expected
+
 ## Functional Requirements
+
 ## Technical Constraints
+
 ## Security Requirements
+
 ## Tests Required
+
 ## Documentation Required
+
 ## Definition of Done
+
 ## Commands to Run
+
 ## Expected Evidence
 
 Do not write implementation code unless explicitly asked. Prefer task design and review.
@@ -1325,14 +1346,23 @@ After implementation:
 Use this output format:
 
 ## Task Completed
+
 ## Files Changed
+
 ## Database Changes
+
 ## Functional Behavior
+
 ## Security and Authorization
+
 ## Tests Added
+
 ## Commands Executed
+
 ## Results
+
 ## Known Limitations
+
 ## Review Notes
 
 Never:

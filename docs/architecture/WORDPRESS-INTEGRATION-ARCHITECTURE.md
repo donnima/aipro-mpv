@@ -2,15 +2,16 @@
 
 **Status:** Accepted (founder-approved 2026-07-28)  
 **ADR:** [ADR-0021](../../DECISIONS.md#adr-0021)  
+**Brand / domains:** [FOUNDER-BRAND-AND-DOMAINS.md](../decisions/FOUNDER-BRAND-AND-DOMAINS.md) — **Urunlytics**; WordPress `urunlytics.com`; API `api.urunlytics.com`  
 **Companions:** [Plugin technical spec](../integration/WORDPRESS-PLUGIN-TECHNICAL-SPEC.md) · [API contract](../integration/WORDPRESS-BACKEND-API-CONTRACT.md) · [Threat model](../security/WORDPRESS-AUTH-BRIDGE-THREAT-MODEL.md)
 
 ---
 
 ## 1. Summary
 
-The initial brand website is an **existing WordPress website**. WordPress is the authoritative system for public pages, registration, login, password reset, session management, account/profile management, roles and capabilities, menus, and **all customer-facing and analyst-facing product screens**.
+The brand is **Urunlytics**. The initial brand website is the existing WordPress site at **https://urunlytics.com**. WordPress is the authoritative system for public pages, registration, login, password reset, session management, account/profile management, roles and capabilities, menus, and **all customer-facing and analyst-facing product screens**.
 
-The AIPro application does **not** create a separate authentication system. The standalone Next.js app acts as a **headless product-intelligence backend and API layer**. Neon/PostgreSQL remains the application database and is never merged with the WordPress database.
+The AIPro / Urunlytics application does **not** create a separate authentication system. The standalone Next.js app acts as a **headless product-intelligence backend and API layer** at **https://api.urunlytics.com**. Neon/PostgreSQL remains the application database and is never merged with the WordPress database.
 
 ---
 

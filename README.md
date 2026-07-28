@@ -1,8 +1,11 @@
-# Product Intelligence Platform
+# Urunlytics — AI Product & Market Opportunity Intelligence Platform
 
-Working product name for the **AIPro MVP**: an analyst-led product opportunity and market-entry intelligence platform.
+**Brand:** Urunlytics · **Product:** AI Product & Market Opportunity Intelligence Platform  
+**Customer website (WordPress):** [https://urunlytics.com](https://urunlytics.com) · **Backend API:** [https://api.urunlytics.com](https://api.urunlytics.com)
 
-This repository is a **pnpm monorepo** with a single Next.js application (ADR-0001). There is no FastAPI service.
+Working repository codename: **AIPro MVP** — an analyst-led product opportunity and market-entry intelligence platform. Brand and domain authority: [`docs/decisions/FOUNDER-BRAND-AND-DOMAINS.md`](docs/decisions/FOUNDER-BRAND-AND-DOMAINS.md).
+
+This repository is a **pnpm monorepo** with a headless Next.js API application (ADR-0001, ADR-0021). There is no FastAPI service. Customer UI and identity live on WordPress.
 
 ## Prerequisites
 

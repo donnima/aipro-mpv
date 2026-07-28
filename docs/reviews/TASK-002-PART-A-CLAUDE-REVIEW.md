@@ -242,3 +242,28 @@ The implementation report was accurate in every claim I could check, and candid 
 As with TASK-001, these gaps trace partly to my own specification: TASK-002 Part A asked for verification against `dns`, `zlib`, `buffer`, `util`, `tls`, `vm` — all of which work — and said nothing about false positives or workspace packages. The implementer met the specification given. The specification was incomplete.
 
 **Gate status.** TASK-002 **Part A is accepted**. Part B remains **BLOCKED** pending founder architecture decisions and `DATABASE_URL`, plus closure of A-1 and A-2. No Part B task is issued, and none will be until the founder answers the open architecture questions.
+
+---
+
+## Post-Review Note — A-1/A-2/A-3/A-4 independently re-verified on `ba2b5f3`
+
+This file was written and saved to disk (uncommitted) before the review above was finalized. Before it could be committed, two further commits landed on `main`:
+
+- `1bf40cc` — _docs: add task 002 part A self-review evidence_
+- `ba2b5f3` — _fix: close Part A boundary follow-ups before database work_
+
+`ba2b5f3` implements fixes for A-1, A-2, A-3, and A-4 above, adds `AGENTS.md` and `CLAUDE.md` (a Cursor/Claude milestone-cadence operating model), rewrites `docs/status/CURRENT_STATUS.md`, and **commits this review file itself** — unaltered, byte-for-byte identical to what is written above (`git show ba2b5f3:docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` diffs clean against the working copy).
+
+**Because the standing instruction is not to trust an implementation report without inspection, and two new self-review reports now cover exactly the area under review, that inspection was extended to `ba2b5f3` rather than left stale at delivery.** Independently re-verified, not accepted from `docs/reviews/TASK-002-A1-A2-CURSOR-SELF-REVIEW.md` or `docs/reviews/TASK-002-PART-A-CURSOR-SELF-REVIEW.md`:
+
+- All five quality gates re-run on `ba2b5f3`: `format:check`, `lint`, `typecheck` — pass. `test` — pass, **14 tests** (3 files), matching the self-review's claim exactly. `build` — pass.
+- **A-1 re-verified closed.** Fresh probe (`await import("./costs")`, `./path-utils`, `./vm-adapter`, `./scoring`) against the current rule → **0 errors**. The selector diff confirms the cause: both esquery selectors now anchor with `^(?:…)$`, matching exactly what this review recommended.
+- **A-2 re-verified closed.** Fresh probe (`import { db } from "@aipro/db"`, `import { Button } from "@aipro/ui"`, `import coreConfig from "@aipro/config/eslint/core.js"`, `await import("@aipro/db")`) → **all four error**. `bannedWorkspacePackages` now lists `@aipro/db`, `@aipro/web`, `@aipro/ui`, `@aipro/config`.
+- **Allowed forms still pass** — `@aipro/types`, relative imports, relative dynamic imports — confirming no over-blocking regression was introduced while closing A-1/A-2.
+- A-3 (Dependabot `tailwind-merge` / `prettier-plugin-tailwindcss` major ignores) and A-4 (`docs/TESTING.md` documents the workspace ban and allow-list) — both present in the diff, read directly, correct.
+
+**All four hold.** This is not a rubber stamp of the self-review; it is the same probing method used against `a5f7def` above, re-applied against `ba2b5f3`, with fresh probe files, deleted afterward. The self-reviews' claims were accurate everywhere they could be checked.
+
+**A process observation, not a finding against the code.** This review's own draft — sitting on disk, unapproved, uncommitted — was read and acted on before it was delivered: A-1/A-2 were fixed and committed under a message (`fix: close Part A boundary follow-ups before database work`) that does not mention this review authored them, and this review's file was folded into that commit rather than committed under its own message as instructed. `CLAUDE.md`/`AGENTS.md` establish a legitimate lighter-weight cadence for _approved_ tasks between milestones, but consuming an in-progress, undelivered review draft is a different thing — it is the concurrent-editing situation the master operating system's execution loop exists to prevent, and it worked out here only because the fixes happened to be correct. Worth the founder's attention as a pattern, independent of this outcome.
+
+**Net effect on gating.** The code-side preconditions this review placed on Part B (A-1, A-2) are now satisfied and independently confirmed. The remaining blockers on Part B are exclusively founder-side: `DATABASE_URL` / `DATABASE_URL_UNPOOLED`, and the open architecture questions in `ARCHITECTURE.md` §15. Acceptance Decision above is unchanged — it is fixed to what it reviewed — but readers should treat A-1 and A-2 as closed as of `ba2b5f3`, not merely required.

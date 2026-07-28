@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Environment — never commit real values (.env.example is tracked)
+.env
+.env.*
+!.env.example
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Test and coverage artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Local tool state
+.claude/settings.local.json
+.vercel/
+.turbo/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -31,7 +31,7 @@ docs/DEVELOPMENT.md                database setup section
 ## Functional Requirements
 
 1. Prisma 6 in `packages/db` against PostgreSQL 16. Local development uses a Neon development branch — **no Docker, no local Postgres** (ADR-0013).
-2. Implement exactly the eleven Phase 1 tables in `DATA_MODEL.md` §4: `users`, `accounts`, `sessions`, `verification_tokens`, `organizations`, `memberships`, `invitations`, `support_grants`, `audit_logs`. Do not create any Phase 2+ table.
+2. Implement exactly the Phase 1 tables in `DATA_MODEL.md` §4 under **ADR-0021**: `users` (WordPress identity mapping), `organizations`, `memberships`, `support_grants`, `audit_logs`. **Do not create** Auth.js tables (`accounts`, `sessions`, `verification_tokens`), password columns, or Phase 1 `invitations`. Do not create any Phase 2+ table.
 3. UUID v7 primary keys. All `DATA_MODEL.md` §1 conventions applied.
 4. All enums from `DATA_MODEL.md` §3 that Phase 1 needs: `Role`, `InvitationStatus`.
 5. Enable RLS on `organizations`, `memberships`, `invitations`, `audit_logs` with policies reading `current_setting('app.current_organization_id', true)`.

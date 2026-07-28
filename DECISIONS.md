@@ -37,13 +37,13 @@ Founder-accepted decisions after Phase 0 are marked **Accepted**. Remaining Prop
 
 **Context.** The operating system (§7) defaults to a monorepo with `apps/web` (Next.js) and `apps/api` (FastAPI), permitting deviation where audit shows another approach is materially better. The repository is empty, so there is no existing code to preserve. The team is one founder, pre-revenue and pre-incorporation.
 
-**Decision.** Build one Next.js application. No FastAPI service. No `apps/api`, no `apps/worker`.
+**Decision.** Build one Next.js application for the **product-intelligence backend and API**. No FastAPI service. No `apps/api`, no `apps/worker`. **Clarified by ADR-0021:** customer-facing UI and identity live in WordPress; Next.js is not the primary customer login or presentation surface.
 
 **Rationale.**
 
 1. Two runtimes double the authorization surface, and tenant isolation is the project's hardest gate. A split forces a service-to-service auth scheme — signing, key distribution, audience validation, rotation — to be built and secured before any product value exists.
-2. Auth.js, the document's preferred auth, is Next.js-native. Pairing it with FastAPI means either two implementations of session verification (how isolation bugs are born) or proxying everything through Next.js, which reduces FastAPI to a remote database client.
-3. Removing the second service removes one host, one secret set, one CI job, one health check, one migration runner, and one rollback path — most of the Phase 14 workload.
+2. ~~Auth.js, the document's preferred auth, is Next.js-native.~~ **Superseded:** WordPress owns identity (ADR-0021). The original Auth.js argument no longer drives stack choice; TypeScript domain purity and single backend deployment still do.
+3. Removing a second _application_ runtime (FastAPI) still removes one host, one secret set, one CI job, one health check, one migration runner, and one rollback path — most of the Phase 14 workload. WordPress is an existing brand site, not a second greenfield service.
 4. The Decimal argument does not hold. Financial correctness comes from Postgres `NUMERIC`, avoiding floats in the calculation path, and tested formulas — all achievable in TypeScript via `decimal.js` (ADR-0006). §12's rule is a constraint on arithmetic, not on language.
 5. §17 explicitly permits Zod instead of Pydantic, so structured AI output is not a differentiator.
 6. §6 forbids a large microservice architecture. Two services for one engineer is where that begins.

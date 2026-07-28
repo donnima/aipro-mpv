@@ -12,7 +12,7 @@
 | **Active Agent**                | `none`                                                                                                         |
 | **Write Lock Owner**            | `none`                                                                                                         |
 | **Active Task**                 | `none`                                                                                                         |
-| **Authoritative Commit**        | `55a01bc` (TASK-007 lock-acquire; deliverable commit becomes baseline once landed)                             |
+| **Authoritative Commit**        | `ee28777` (will update to residual polish commit SHA after land)                                               |
 | **Allowed Paths**               | `none` — no agent holds the lock                                                                               |
 | **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                              |
 | **Next Action**                 | Founder supplies WordPress installation details and Neon credentials, then authorizes revised TASK-002 Part B. |
@@ -77,17 +77,18 @@ Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted. Agent Lock Protoc
 
 ---
 
-## Quality gates — last verified 2026-07-28 (TASK-007, Cursor)
+## Quality gates — last verified 2026-07-28 (TASK-007 residual polish, Cursor)
 
-| Gate                       | Result                                   |
-| -------------------------- | ---------------------------------------- |
-| `pnpm validate:agent-lock` | pass                                     |
-| `pnpm format:check`        | pass                                     |
-| `pnpm lint`                | pass                                     |
-| `pnpm typecheck`           | pass                                     |
-| `pnpm test`                | pass — **25** tests, 4 files             |
-| `pnpm build`               | pass — Next.js 15.5.22                   |
-| Conflict search (auth)     | pass — conflicts superseded or annotated |
+| Gate                       | Result                                                     |
+| -------------------------- | ---------------------------------------------------------- |
+| `pnpm validate:agent-lock` | pass                                                       |
+| `pnpm format:check`        | pass                                                       |
+| `pnpm lint`                | pass                                                       |
+| `pnpm typecheck`           | pass                                                       |
+| `pnpm test`                | pass — **25** tests, 4 files                               |
+| `pnpm build`               | pass — Next.js 15.5.22                                     |
+| Documentation link check   | pass — relative markdown targets resolved                  |
+| Conflict search (auth)     | pass — conflicts superseded or annotated (not silent-deleted) |
 
 ---
 

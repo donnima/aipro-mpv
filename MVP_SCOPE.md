@@ -197,15 +197,19 @@ These are contradictions **inside the source operating system document**. Each i
 
 ---
 
-## 6. Screens — v1 (19)
+## 6. Screens — v1 (inside WordPress)
 
-**Analyst / Org Admin (13):** Sign in · Accept invitation · Organization selector · Project list · Project workspace (tabbed: Profile · Target Market · Evidence · Competitors · Suppliers & Quotes · Cost Scenarios · Unit Economics · Opportunity · Risks · Channel Readiness) · Blueprints (launch + growth) · Analyst review · Report preview · Actual performance · Organization settings · Audit log · AI usage log · Admin scoring configuration
+All screens render within the WordPress site/theme via `aipro-platform-bridge` (ADR-0021). There is **no** standalone AIPro login, registration, or customer portal domain.
 
-**Client Viewer (2):** Assigned project (read-only) · Approved report
+**Analyst / Org Admin (product surfaces):** Product dashboard · Project list · Create product project · Project workspace tabs (Profile · Target Market · Evidence · Competitors · Suppliers & Quotes · Cost Scenarios · Unit Economics · Opportunity · Confidence · Risks · Channel Readiness) · Launch blueprint · Growth blueprint · Analyst review · Report preview · Actual performance · Organization settings (AIPro membership) · Audit log · AI usage log · Admin scoring configuration
 
-**Public (3):** Landing page · Survey · Privacy policy
+**Client Viewer:** Account-linked project access (read-only) · Approved report
 
-**Reduction rationale:** §21's items 7–17 are eleven separate screens over a single project. They become tabs of one project workspace. Same functionality, one navigation model, far less code.
+**Public (may remain on WordPress brand pages):** Landing · Survey · Privacy policy
+
+**Superseded:** Sign-in / Accept invitation / Organization selector as **standalone Next.js auth screens**. WordPress login and capability/membership mapping replace them.
+
+**Reduction rationale:** §21's items 7–17 remain tabs of one project workspace. Same functionality, one WordPress navigation model.
 
 ---
 

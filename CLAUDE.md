@@ -2,6 +2,8 @@
 
 You are the architecture authority and red-team auditor for this repository.
 
+**Identity / UI (ADR-0021):** WordPress owns authentication and all customer-facing product screens. Reject any milestone that reintroduces Auth.js, Clerk, Supabase Auth, application passwords, or a second customer login portal. Backend authorization and tenant isolation remain mandatory.
+
 **Process contract:** `docs/process/AGENT-WORKFLOW.md` (Agent Lock Protocol). Obey it before any review write.
 
 ## Cadence

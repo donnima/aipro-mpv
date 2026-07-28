@@ -90,8 +90,8 @@ The operating system document defaults to Next.js + FastAPI but explicitly permi
 **1. Two runtimes double the authorization surface, and authorization is the hard gate.**
 Phase 1's gate is tenant isolation: _"Do not build product projects until tenant isolation is verified."_ With one service there is exactly one place a request is authenticated and one place `organization_id` scoping is applied. Split across Next.js and FastAPI, you must first invent and secure a service-to-service auth scheme — JWT signing, key distribution, audience and expiry validation, clock skew, rotation — before writing one line of business logic. That is a new attack surface bought before any product value.
 
-**2. The preferred auth library is Next.js-native.**
-§7 prefers Auth.js. **Historical note:** ADR-0001’s Auth.js coupling argument applied at Phase 0. **ADR-0021** later moved identity to WordPress; Auth.js is superseded. The FastAPI split remains rejected for isolation and ops reasons independent of Auth.js.
+**2. Identity ownership moved to WordPress (ADR-0021) — a single TypeScript backend still wins.**
+§7 preferred Auth.js. **Historical note:** ADR-0001’s Auth.js coupling argument applied at Phase 0. **ADR-0021** moved identity and customer UI to WordPress; Auth.js is superseded. The FastAPI split remains rejected for isolation and ops reasons independent of Auth.js.
 
 **3. It removes an entire production environment.**
 Dropping the API service removes one host, one secret set, one CI job, one health check, one migration runner, one rollback procedure, and one incident surface. For a pre-incorporation, founder-led team this is not a preference; it is most of the Phase 14 workload.
@@ -350,15 +350,16 @@ The report is composed server-side into an HTML document — the single source o
 
 ## 10. Deployment
 
-| Concern          | Choice                                                               |
-| ---------------- | -------------------------------------------------------------------- |
-| Web application  | WordPress (primary customer UI) + AIPro API on Vercel or containers  | Brand/UI in WP; API may be on Vercel (ADR-0021)         |
-| Database         | Neon PostgreSQL, EU region, with branching for dev/preview           | **Not** merged with the WordPress database              |
-| Object storage   | Cloudflare R2, EU jurisdiction                                       |
-| Email            | WordPress / site mail for identity; product notify via API as needed | Magic-link Auth.js email **superseded** (ADR-0005→0021) |
-| Error monitoring | Sentry                                                               |
-| Analytics        | PostHog EU                                                           |
-| CI               | GitHub Actions: lint → typecheck → unit → integration → build → E2E  |
+| Concern          | Choice                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Customer website | **WordPress** (primary UI / identity) via `aipro-platform-bridge`                             |
+| Backend API      | Vercel or containers (headless AIPro API — not the main customer login UI)                    |
+| Database         | Neon PostgreSQL, EU region, with branching for dev/preview — **not** merged with WordPress DB |
+| Object storage   | Cloudflare R2, EU jurisdiction                                                                |
+| Email            | WordPress for identity mail; product notify via API as needed (Auth.js magic-link superseded) |
+| Error monitoring | Sentry                                                                                        |
+| Analytics        | PostHog EU                                                                                    |
+| CI               | GitHub Actions: lint → typecheck → unit → integration → build → E2E                           |
 
 **EU region throughout** because target markets include the EU and the validation site collects EU personal data (§19). Choosing EU residency now is free; migrating later is not.
 
@@ -401,7 +402,7 @@ Ranked. Each has an owning phase. Full threat model lands in `SECURITY.md` in Ph
 | S-11 | Public survey abuse — spam, PII harvest, enumeration                  |   **High**   | Rate limit by IP + email, bot mitigation, no result echo, consent record                                                    |   11    |
 | S-12 | GDPR: no lawful basis, retention, or erasure path for leads and users |   **High**   | Consent record with policy version; documented retention; erasure pseudonymizes the user and preserves the audit trail      | 11 / 13 |
 | S-13 | Audit log tampering or deletion                                       |  **Medium**  | Append-only: no update/delete path in the DAL; DB grants deny UPDATE/DELETE to the application role                         |    1    |
-| S-14 | Session not invalidated on role change or org removal                 |  **Medium**  | Database sessions; membership and role read per request, not trusted from the session token                                 |    1    |
+| S-14 | Authz not invalidated on role change or org removal                   |  **Medium**  | Short-lived bridge tokens; membership and role re-read from Neon per request, not trusted from token alone (ADR-0021)       |    1    |
 | S-15 | Draft AI output leaking to a client viewer                            |  **Medium**  | `reviewStatus` checked in the DAL query, not only in the UI                                                                 |  7 / 8  |
 | S-16 | Server Action invoked directly, bypassing UI checks                   |  **Medium**  | Every Server Action independently re-authenticates, re-authorizes, and re-validates. UI state is never a security control   |    1    |
 | S-17 | Missing security headers, no CSRF on public forms                     |  **Medium**  | CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy`; WordPress nonces + CSRF on WP forms; origin checks on public POSTs  | 1 / 11  |
@@ -426,7 +427,7 @@ Two tracks. Track B is independent of the application and unblocks market valida
 | Phase  | Scope                                                                                                                  | Gate                                                                                              |
 | ------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **0**  | Repo, tooling, CI, docs baseline, environment blockers cleared                                                         | Frontend starts, DB reachable, lint/typecheck/CI green                                            |
-| **1**  | Auth, users, organizations, memberships, invitations, roles, tenant-scoped DAL, RLS, audit log                         | **HARD GATE — isolation test suite passes. No project data before this.**                         |
+| **1**  | WordPress identity mappings, organizations, memberships, roles, tenant-scoped DAL, RLS, audit log (no Auth.js)         | **HARD GATE — isolation test suite passes. No project data before this.**                         |
 | **2**  | Product projects, profile, target markets, channels, status lifecycle, project workspace                               | Org-scoped, transitions validated, audit events written                                           |
 | **3**  | DataSource + citations, market evidence, competitors, suppliers, quotes, comparison, attachments                       | Provenance complete; missing-source warnings; upload restrictions enforced                        |
 | **4**  | Cost scenarios, line items, economics engine, comparison, versioning                                                   | Decimal-only, formulas tested, results reproducible                                               |

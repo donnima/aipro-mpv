@@ -1,25 +1,25 @@
 # CURRENT_STATUS.md — Product Intelligence Platform
 
-**Last updated:** 2026-07-28 (TASK-008 Urunlytics brand/domains recorded — lock released)
+**Last updated:** 2026-07-28 (Claude milestone audit in progress — lock acquired)
 **Branch:** `main` · **Remote:** `donnima/aipro-mpv` (public)
 
 ---
 
 ## Agent lock
 
-| Field                           | Value                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Active Agent**                | `none`                                                                                                                   |
-| **Write Lock Owner**            | `none`                                                                                                                   |
-| **Active Task**                 | `none`                                                                                                                   |
-| **Authoritative Commit**        | `fe973e8`                                                                                                            |
-| **Allowed Paths**               | `none` — no agent holds the lock                                                                                         |
-| **Forbidden Paths**             | `*` — all product/process writes require acquiring the lock first                                                        |
-| **Next Action**                 | Founder confirms WordPress single-site vs Multisite, supplies Neon credentials, then authorizes revised TASK-002 Part B. |
-| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                              |
-| **Authoritative Review Commit** | `780e627`                                                                                                                |
-| **Cursor Action Permitted**     | `no`                                                                                                                     |
-| **Founder Authorization**       | `none` — idle (TASK-008 recorded Urunlytics brand/domains from founder)                                                  |
+| Field                           | Value                                                                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Active Agent**                | `Claude`                                                                                                                                 |
+| **Write Lock Owner**            | `Claude`                                                                                                                                 |
+| **Active Task**                 | `none` — ad hoc milestone audit directed by the founder in the Claude-facing channel, not a `docs/tasks/TASK-XXX.md` implementation task |
+| **Authoritative Commit**        | `e6f2370` — milestone under audit (TASK-006, TASK-007 / ADR-0021, TASK-008, and their process remediations)                              |
+| **Allowed Paths**               | `docs/reviews/**`, `docs/status/CURRENT_STATUS.md`                                                                                       |
+| **Forbidden Paths**             | `*` except **Allowed Paths** above — no implementation, architecture, or task-spec edits under this lock                                 |
+| **Next Action**                 | Claude delivers `docs/reviews/URUNLYTICS-MILESTONE-CLAUDE-AUDIT.md`, then updates this block and releases the lock                       |
+| **Authoritative Review**        | `docs/reviews/TASK-002-PART-A-CLAUDE-REVIEW.md` (committed)                                                                              |
+| **Authoritative Review Commit** | `780e627`                                                                                                                                |
+| **Cursor Action Permitted**     | `no`                                                                                                                                     |
+| **Founder Authorization**       | Founder directed this audit directly in the Claude-facing channel, 2026-07-28, with explicit scope, audit areas, and output rules        |
 
 ---
 
@@ -30,7 +30,7 @@
 | **Current Task**    | TASK-002 Part B (revised under ADR-0021)                                                                                        |
 | **Previous Task**   | TASK-008 — Urunlytics brand and domains                                                                                         |
 | **Previous Status** | **COMPLETE** — brand/domains recorded                                                                                           |
-| **Current Status**  | **BLOCKED**                                                                                                                     |
+| **Current Status**  | **BLOCKED** (product) — Claude milestone audit in progress (process)                                                            |
 | **Blocking Reason** | Neon `DATABASE_URL` / `DATABASE_URL_UNPOOLED`, WordPress Multisite vs single-site, and founder authorization for revised Part B |
 
 **No Part B task is issued until** Multisite confirmation + Neon credentials are supplied and status grants Cursor the write lock for revised Part B per ADR-0021 schema.
@@ -39,7 +39,7 @@
 
 ## Where the project stands
 
-Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted. Agent Lock Protocol in force. TASK-006 extracted Q3/Q4/Q6. TASK-007 / ADR-0021 Accepted. **Brand:** Urunlytics — WordPress `urunlytics.com`, API `api.urunlytics.com` ([FOUNDER-BRAND-AND-DOMAINS.md](../decisions/FOUNDER-BRAND-AND-DOMAINS.md)). Neon and Multisite confirmation still required before Part B.
+Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted. Agent Lock Protocol in force. TASK-006 extracted Q3/Q4/Q6. TASK-007 / ADR-0021 Accepted. **Brand:** Urunlytics — WordPress `urunlytics.com`, API `api.urunlytics.com` ([FOUNDER-BRAND-AND-DOMAINS.md](../decisions/FOUNDER-BRAND-AND-DOMAINS.md)). Neon and Multisite confirmation still required before Part B. **Claude is conducting the founder-directed milestone audit now** (`docs/reviews/URUNLYTICS-MILESTONE-CLAUDE-AUDIT.md`, in progress under the Claude lock above).
 
 ---
 
@@ -52,6 +52,7 @@ Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted. Agent Lock Protoc
 | TASK-006         | Founder decisions extraction (Q3/Q4/Q6)          | **COMPLETE**                                          | [FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md](../reviews/FOUNDER-DECISIONS-EXTRACTION-CURSOR-SELF-REVIEW.md) |
 | TASK-007         | WordPress identity and presentation architecture | **COMPLETE** (docs only)                              | [WORDPRESS-ARCHITECTURE-CURSOR-SELF-REVIEW.md](../reviews/WORDPRESS-ARCHITECTURE-CURSOR-SELF-REVIEW.md)             |
 | TASK-008         | Urunlytics brand and domains                     | **COMPLETE**                                          | [TASK-008-URUNLYTICS-BRAND-CURSOR-SELF-REVIEW.md](../reviews/TASK-008-URUNLYTICS-BRAND-CURSOR-SELF-REVIEW.md)       |
+| Milestone audit  | Urunlytics milestone audit (TASK-006/007/008)    | **IN PROGRESS** (Claude)                              | `docs/reviews/URUNLYTICS-MILESTONE-CLAUDE-AUDIT.md` (pending)                                                       |
 | TASK-002 Part B  | Database foundation (WP identity mappings)       | **BLOCKED** — Neon + Multisite + Part B authorization | —                                                                                                                   |
 | TASK-003 / T-003 | Auth.js authentication                           | **SUPERSEDED** by ADR-0021                            | —                                                                                                                   |
 | TASK-004         | Organizations, memberships, tenant DAL           | Draft — UI path via WordPress (ADR-0021)              | —                                                                                                                   |
@@ -80,7 +81,18 @@ Phase 0 tooling baseline: accepted. TASK-002 Part A: accepted. Agent Lock Protoc
 
 ---
 
-## Quality gates — last verified 2026-07-28 (TASK-008, Cursor)
+## Quality gates — re-verified 2026-07-28 by Claude at `e6f2370` (supersedes the TASK-008 self-report below)
+
+| Gate                       | Result                                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm validate:agent-lock` | pass                                                                                                                                 |
+| `pnpm format:check`        | **FAIL** — `docs/status/CURRENT_STATUS.md` misaligned table padding; GitHub CI run for `e6f2370` confirms failure at the format step |
+| `pnpm lint`                | pass                                                                                                                                 |
+| `pnpm typecheck`           | pass                                                                                                                                 |
+| `pnpm test`                | pass — 25 tests, 4 files                                                                                                             |
+| `pnpm build`               | pass                                                                                                                                 |
+
+**Superseded self-report (TASK-008, Cursor, inaccurate as of `e6f2370`):**
 
 | Gate                       | Result |
 | -------------------------- | ------ |
